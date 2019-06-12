@@ -36,11 +36,6 @@ connect_session.headers.update({'User-Agent':
                                 })
 connect_session.get('http://ipgw.neu.edu.cn/srun_portal_pc.php?ac_id=1&')
 count = open("resources/count", "r").readlines()
-res = pass_authenticate(count[0], count[1], connect_session).text
-print(connect_session)
-with open("out.html", "w") as page:
-    page.write(res)
-# print(connect_session)
-
-# with open("out.html",'w') as file:
-#     file.write(r.text)
+pass_login_result = pass_authenticate(count[0][:-1], count[1], connect_session).text  # 调试用账号密码
+with open("out2.html", "w") as page:
+    page.write(pass_login_result)
