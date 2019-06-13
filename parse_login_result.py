@@ -3,6 +3,11 @@ import requests
 import re
 
 
+def drop_device(uid, session):
+    data = {'action': 'dm', 'sid': uid}
+    session.post('https://ipgw.neu.edu.cn/srun_cas.php', data=data)
+
+
 class Device:
     ip = ""
     login_date = ""
@@ -12,8 +17,7 @@ class Device:
     uid = 0
 
     def logout(self, session: requests.Session):
-        data = {'action': 'dm', 'sid': self.uid}
-        session.post('https://ipgw.neu.edu.cn/srun_cas.php', data=data)
+        drop_device(self.uid, session)
 
     def __init__(self, ip, login_date, duration, flow):
         self.ip = ip
@@ -26,8 +30,11 @@ class Device:
             self.is_current) + ' ' + str(self.uid)
 
 
-def parse_online_data(online_data) -> [Device]:
-    online_data_soup = BeautifulSoup(online_data, 'html.parser')
+def parse_login_result(login_res: str):
+    return BeautifulSoup(login_res, 'lxml')
+
+
+def get_devices_data(online_data_soup: BeautifulSoup) -> [Device]:
     device_info_soup: Tag = online_data_soup.find("table", {'class': 'table'})
     device_soup_array: [Tag] = device_info_soup.find_all("tr", {'id': 'tr_'})
     device_info = []
@@ -39,3 +46,12 @@ def parse_online_data(online_data) -> [Device]:
             current_device.is_current = True
         device_info.append(current_device)
     return device_info
+
+
+def other_account(online_data: str):
+    if online_data.find("帮他下线") > -1:
+        return re.search("class=\"btn btn-block btn-dark\".*do_drop\\(\'(.*)\'\\)", online_data).group(1)
+    else:
+        return None
+
+def base_info(online_data_soup:BeautifulSoup):
