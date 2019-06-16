@@ -54,4 +54,8 @@ def other_account(online_data: str):
     else:
         return None
 
-def base_info(online_data_soup:BeautifulSoup):
+
+def base_info(online_data_soup: BeautifulSoup):
+    info_soup = online_data_soup.find("form", {"method": "post", "id": "fm1"}, class_="fm-v")
+    info = (info_soup[1], info_soup[3], info_soup[5], info_soup[7])  # 登录账号，当前ip，已用流量，已用时长。
+    return info
