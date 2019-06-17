@@ -1,9 +1,10 @@
 from bs4 import BeautifulSoup, Tag
-import requests
-import re
+import re, requests
 
 
-def drop_device(uid, session):
+def drop_device(uid, session=None):
+    if not session:
+        session = requests.session()
     data = {'action': 'dm', 'sid': uid}
     session.post('https://ipgw.neu.edu.cn/srun_cas.php', data=data)
 
@@ -26,8 +27,11 @@ class Device:
         self.flow = flow
 
     def __str__(self):
-        return self.ip + ' ' + self.login_date + ' ' + self.duration + ' ' + self.flow + ' ' + str(
-            self.is_current) + ' ' + str(self.uid)
+        current = ''
+        if self.is_current:
+            current = "current"
+        return self.ip + ' ' + "login date: " + self.login_date + ' ' + "duration: " + \
+               self.duration + ' ' + "consume: " + self.flow + ' ' + current + ' uid: ' + str(self.uid)
 
 
 def parse_login_result(login_res: str):
@@ -56,6 +60,6 @@ def other_account(online_data: str):
 
 
 def base_info(online_data_soup: BeautifulSoup):
-    info_soup = online_data_soup.find("form", {"method": "post", "id": "fm1"}, class_="fm-v")
-    info = (info_soup[1], info_soup[3], info_soup[5], info_soup[7])  # 登录账号，当前ip，已用流量，已用时长。
-    return info
+    info_soup = online_data_soup.find("form", {"method": "post", "id": "fm1"}, class_="fm-v")  # type: Tag
+    info = tuple(info_soup.stripped_strings)
+    return info[1], info[3], info[5], info[7]
