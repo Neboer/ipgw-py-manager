@@ -1,6 +1,8 @@
 # NEU ipgw manager
 ![](https://img.shields.io/badge/NEU-ipgw--manager-blue.svg)
 
+![](./IPGW.svg)
+
 东北大学新版ipgw网关管理程序。
 
 由于校内网关切换到统一认证，原有的用户名+密码登录网关的方式彻底失效。新版本的ipgw管理程序使用python编写，直接可以支持跨平台使用。
