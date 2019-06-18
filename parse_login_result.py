@@ -17,7 +17,9 @@ class Device:
     is_current = False
     uid = 0
 
-    def logout(self, session: requests.Session):
+    def logout(self, session: requests.Session = None):
+        if not session:
+            session = requests.session()
         drop_device(self.uid, session)
 
     def __init__(self, ip, login_date, duration, flow):

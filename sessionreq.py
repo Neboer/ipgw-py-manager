@@ -26,12 +26,16 @@ def pass_authenticate(username, password, session: requests.Session):
 
 
 def login_fail(login_result: str):
-    last_number = re.search("连续登录失败5次，账号将被锁定1分钟，剩余次数(.)", login_result)
-    if last_number:
-        return int(last_number.group(1))
+    if login_result.find("智慧东大--统一身份认证") != -1:
+        last_number = re.search("连续登录失败5次，账号将被锁定1分钟，剩余次数(.)", login_result)
+        if last_number:
+            return int(last_number.group(1))
+        else:
+            return -1  # 连续登录失败，ip将停止使用1分钟。
     else:
-        return None  # 代表登陆成功
-
+        if login_result.find("访问被拒绝") != -1:
+            return -1  # 连续登录失败，ip将停止使用1分钟。
+        return None  # 代表登录成功
 
 def connect_to_ipgw_by_unpw(username: str, password: str, connect_session: requests.Session = None):
     if not connect_session:
@@ -45,7 +49,7 @@ def connect_to_ipgw_by_unpw(username: str, password: str, connect_session: reque
     connect_session.get('http://ipgw.neu.edu.cn/srun_portal_pc.php?ac_id=1&')
     pass_login_result = pass_authenticate(username, password, connect_session).text  # 调试用账号密码 TODO:增加登录失败的提示
     ifLoginFailLastTryTime = login_fail(pass_login_result)
-    if not ifLoginFailLastTryTime:
+    if ifLoginFailLastTryTime is None:
         pass_online_info = connect_session.get(
             "https://ipgw.neu.edu.cn/srun_cas.php?ac_id=1").text  # 如果登陆成功，重新访问在线信息列表，以获得最新的状态数据。
         return pass_online_info
