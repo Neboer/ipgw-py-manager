@@ -1,6 +1,9 @@
 # NEU ipgw manager
 ![](https://img.shields.io/badge/NEU-ipgw--manager-blue.svg)
 
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="122" height="20"><linearGradient id="b" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="a"><rect width="122" height="20" rx="3" fill="#fff"/></clipPath><g clip-path="url(#a)"><path fill="#555" d="M0 0h33v20H0z"/><path fill="#007ec6" d="M33 0h89v20H33z"/><path fill="url(#b)" d="M0 0h122v20H0z"/></g><g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110"> <text x="175" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="230">NEU</text><text x="175" y="140" transform="scale(.1)" textLength="230">NEU</text><text x="765" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="790">ipgw-manager</text><text x="765" y="140" transform="scale(.1)" textLength="790">ipgw-manager</text></g> </svg>
+
+
 东北大学新版ipgw网关管理程序。
 
 由于校内网关切换到统一认证，原有的用户名+密码登录网关的方式彻底失效。新版本的ipgw管理程序使用python编写，直接可以支持跨平台使用。
