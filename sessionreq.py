@@ -37,6 +37,7 @@ def login_fail(login_result: str):
             return -1  # 连续登录失败，ip将停止使用1分钟。
         return None  # 代表登录成功
 
+
 def connect_to_ipgw_by_unpw(username: str, password: str, connect_session: requests.Session = None):
     if not connect_session:
         connect_session = requests.session()

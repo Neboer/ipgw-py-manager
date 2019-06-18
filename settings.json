@@ -1,8 +1,12 @@
 {
-    "global_headers": {},
+    "global_headers": {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36",
+        "Upgrade-Insecure-Requests": "1",
+        "Host": "pass.neu.edu.cn"
+    },
     "unity_login": {
         "username": "20183602",
-        "password": "m,590718",
+        "password": "",
         "cookie": ""
     },
     "ipgw_cookie_jar": {}
