@@ -14,8 +14,8 @@ parser.add_argument('-o', action='store_true', help='log out all devices connect
 parser.add_argument('--logout', default=None, help='logout specified id', dest='uid')
 parser.add_argument('-q', '--quiet', action='store_true', default=None, help='quiet mode, no output')
 parser.add_argument('-c', '--current', default=None, help='list devices and show the detail info of each device')
-parser.add_argument('-s', '--status', action='store_true', default=None,
-                    help='show the detail of your ipgw account, needs web center\'s password. ')
+# parser.add_argument('-s', '--status', action='store_true', default=None,
+#                     help='show the detail of your ipgw account, needs web center\'s password. ')
 parser.add_argument('--config', default=None, help='open configure file with specific text editor.')
 args = parser.parse_args()
 
