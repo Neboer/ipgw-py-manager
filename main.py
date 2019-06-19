@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, getpass, json, os
+import argparse, getpass, json, os, re
 from sessionreq import connect_to_ipgw_by_unpw
 from parse_login_result import parse_login_result, get_devices_data, other_account, base_info, drop_device
 
@@ -13,18 +13,27 @@ parser.add_argument('-o', action='store_true', help='log out all devices connect
 # parser.add_argument('--other', action='store_true', help='if set, just logout or query your other devices.')
 parser.add_argument('--logout', default=None, help='logout specified id', dest='uid')
 parser.add_argument('-q', '--quiet', action='store_true', default=None, help='quiet mode, no output')
-parser.add_argument('-c', '--current', default=None, help='list devices and show the detail info of each device')
+parser.add_argument('-c', '--current', action="store_true", help='list devices and show the detail info of each device')
 # parser.add_argument('-s', '--status', action='store_true', default=None,
 #                     help='show the detail of your ipgw account, needs web center\'s password. ')
 parser.add_argument('--config', default=None, help='open configure file with specific text editor.')
+parser.add_argument('--change_location', default=None, help='change config file location which stored in the code',
+                    dest='config_file_location')
 args = parser.parse_args()
+
+homepath = os.getenv("HOME")
+setting_file_location = homepath + "/.ipgw-py-manager/settings.json"
+with open(setting_file_location, "r") as setting_file:
+    settings = json.load(setting_file)
 
 
 def normal_login(username, password):
     if username == "" or password == "":
         print("username or password is empty, exit.")
         exit(1)
-    result = connect_to_ipgw_by_unpw(username, password)
+    result = connect_to_ipgw_by_unpw(username, password, settings)
+    with open(setting_file_location, "w") as setting_file:
+        json.dump(settings, setting_file, indent=4)
     if type(result) is int:
         if result == -1:
             print("fail 5 times, ip will be locked for 1 min")
@@ -55,9 +64,6 @@ def print_login_result(info_and_basic_data_tuple: (tuple, list)):
         print(device)
 
 
-homepath = os.getenv("HOME")
-setting_file_location = homepath + "/.ipgw-py-manager/settings.json"
-settings = json.load(open(setting_file_location, "r"))
 if args.login:
     if args.username:  # 如果用户指定了用户名，则用指定的用户名登录
         password = getpass.getpass()
@@ -85,4 +91,14 @@ if args.logout_all:
 
 if args.config:
     os.system(args.config + " " + setting_file_location)
+    exit(0)
+
+if args.config_file_location:
+    abspath = os.path.realpath(__file__)
+    print("rewrite default config path in ", abspath)
+    thisfile = open(abspath, 'r+')
+    newfiledata = re.sub(r"setting_file_location = \"(.*)\"",
+                         "setting_file_location = \"" + args.config_file_location + "\"", thisfile.read())
+    print(newfiledata)
+    thisfile.close()
     exit(0)
