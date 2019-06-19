@@ -55,7 +55,8 @@ def print_login_result(info_and_basic_data_tuple: (tuple, list)):
         print(device)
 
 
-setting_file_location = "/home/neboer/PycharmProjects/ipgw-py-manager/settings.json"
+homepath = os.getenv("HOME")
+setting_file_location = homepath + "/.ipgw-py-manager/settings.json"
 settings = json.load(open(setting_file_location, "r"))
 if args.login:
     if args.username:  # 如果用户指定了用户名，则用指定的用户名登录
