@@ -38,23 +38,21 @@ def login_fail(login_result: str):
         return None  # 代表登录成功
 
 
-def connect_to_ipgw_by_unpw(username: str, password: str, connect_session: requests.Session = None):
+def connect_to_ipgw_by_unpw(username: str, password: str, setting_data: dict, connect_session: requests.Session = None):
     if not connect_session:
         connect_session = requests.session()
-    connect_session.headers.update({'User-Agent':
-                                        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36',
-                                    "Referer": "https://pass.neu.edu.cn/tpass/login?service=https%3A%2F%2Fipgw.neu.edu.cn%2Fsrun_cas.php%3Fac_id%3D3",
-                                    "Upgrade-Insecure-Requests": "1",
-                                    "Host": "pass.neu.edu.cn"
-                                    })
+    connect_session.headers.update(setting_data["global_headers"])
+    requests.utils.cookiejar_from_dict(setting_data["ipgw_cookie_jar"], connect_session.cookies)
     connect_session.get('http://ipgw.neu.edu.cn/srun_portal_pc.php?ac_id=1&')
     pass_login_result = pass_authenticate(username, password, connect_session).text  # 调试用账号密码 TODO:增加登录失败的提示
     ifLoginFailLastTryTime = login_fail(pass_login_result)
     if ifLoginFailLastTryTime is None:
         pass_online_info = connect_session.get(
             "https://ipgw.neu.edu.cn/srun_cas.php?ac_id=1").text  # 如果登陆成功，重新访问在线信息列表，以获得最新的状态数据。
+        setting_data["ipgw_cookie_jar"].update(requests.utils.dict_from_cookiejar(connect_session.cookies))
         return pass_online_info
     else:
+        setting_data["ipgw_cookie_jar"].update(requests.utils.dict_from_cookiejar(connect_session.cookies))
         return ifLoginFailLastTryTime
     # with open("resources/union_fail.html","w") as file:
     #     file.write(pass_login_result)
