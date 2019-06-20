@@ -1,4 +1,5 @@
 import requests
+from requests import TooManyRedirects
 from bs4 import BeautifulSoup
 from requestresult import SuccessPage, UnionAuth
 
@@ -14,8 +15,13 @@ def distinguish_and_build(page_soup: BeautifulSoup):
 
 
 def login(session: requests.Session, username=None, password=None):
-    temp_login = distinguish_and_build(
-        BeautifulSoup(session.get('http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1').text, "lxml"))
+    try:
+        login_result_soup = session.get('http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1')
+    except TooManyRedirects:
+        print("Cookies are out of date, rebuilding.")
+        session.cookies.clear()
+        login_result_soup = session.get('http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1')
+    temp_login = distinguish_and_build(BeautifulSoup(login_result_soup.text, "lxml"))
     if type(temp_login) is SuccessPage:
         temp_login.refresh(session)
         return temp_login
