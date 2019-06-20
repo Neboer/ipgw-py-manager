@@ -19,8 +19,11 @@ def login(session: requests.Session, username=None, password=None):
     if type(temp_login) is SuccessPage:
         return temp_login
     elif type(temp_login) is UnionAuth:
-        if username:
-            return temp_login.login(username, password, session)
+        if username is not None:
+            if username != "" and password != "":
+                return temp_login.login(username, password, session)
+            else:
+                print("username or password cannot be empty")
         else:
             return temp_login
     else:
