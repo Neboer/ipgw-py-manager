@@ -46,7 +46,7 @@ class Device:
     @staticmethod
     def logout_sid(sid: str, session: requests.Session) -> bool:
         logout_result = session.post('https://ipgw.neu.edu.cn/srun_cas.php', data={'action': 'dm', 'sid': sid}).text
-        if logout_result == "":
+        if logout_result == "下线请求已发送":
             return True
         else:
             if logout_result.find("CAS Authentication wanted!"):
@@ -102,5 +102,4 @@ class SuccessPage:
         self.parse_other_online(soup)
         if not self.online_other_uid:
             self.parse_base_info(soup)
-        else:
-            self.parse_devices_list(soup)
+        self.parse_devices_list(soup)

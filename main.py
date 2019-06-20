@@ -53,7 +53,6 @@ if args.login:
         result = login(global_session)
         if type(result) is UnionAuth:  # cookie错误或没有cookie。
             print("cookie empty or error. login with stored username.")
-            global_session.cookies.clear()
             unpw = read_unpw_from_settings(settings)
             result = result.login(unpw[0], unpw[1], global_session)
             if type(result) is UnionAuth:
@@ -62,8 +61,7 @@ if args.login:
                 print("unknown request result")
         elif result is None:
             print("unknown request result")
-        else:
-            print_login_successful(result)
+        print_login_successful(result)
 
 if args.uid:
     if Device.logout_sid(args.uid, global_session):
@@ -89,7 +87,6 @@ if args.logout_all:
         result = login(global_session)
         if type(result) is UnionAuth:  # cookie错误或没有cookie。
             print("cookie error. login with stored username.")
-            global_session.cookies.clear()
             unpw = read_unpw_from_settings(settings)
             result = result.login(unpw[0], unpw[1], global_session)
             if type(result) is UnionAuth:
@@ -105,8 +102,8 @@ if args.logout_all:
                 else:
                     print("logout {} error".format(device.sid))
 
-if args.recookie:
-    new_settings_content = settings["ipgw_cookie_jar"].update(
-        requests.utils.dict_from_cookiejar(global_session.cookies))
+if not args.nocookie:
+    new_cookies = requests.utils.dict_from_cookiejar(global_session.cookies)
+    settings["ipgw_cookie_jar"] = new_cookies
     with open(setting_file_location, "w") as setting_file:
-        json.dump(new_settings_content, setting_file, indent=4)
+        json.dump(settings, setting_file, indent=4)
