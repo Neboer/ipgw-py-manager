@@ -30,7 +30,8 @@ class UnionAuth:  # 代表一个统一认证页面。
             'execution': self.form_execution,
             '_eventId': 'submit'
         }
-        soup = BeautifulSoup(session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text,"lxml")
+        soup = BeautifulSoup(session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text,
+                             "lxml")
         import login
         return login.distinguish_and_build(soup)
 
@@ -97,6 +98,9 @@ class SuccessPage:
             if "style" in single_device_soup.attrs:
                 current_device.is_current = True
             self.device_list.append(current_device)
+
+    def logout_other(self, session: requests.Session):
+        return Device.logout_sid(self.online_other_uid, session)
 
     def __init__(self, soup: BeautifulSoup):
         self.parse_other_online(soup)
