@@ -1,5 +1,6 @@
 import requests, re
 from bs4 import BeautifulSoup, Tag
+from requests import Timeout, TooManyRedirects
 
 
 class UnionAuth:  # 代表一个统一认证页面。
@@ -30,10 +31,18 @@ class UnionAuth:  # 代表一个统一认证页面。
             'execution': self.form_execution,
             '_eventId': 'submit'
         }
-        soup = BeautifulSoup(session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text,
-                             "lxml")
-        import login
-        return login.distinguish_and_build(soup)
+        try:
+            login_result = session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text
+        except TooManyRedirects:
+            session.cookies.clear()
+            login_result = session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text
+        else:
+            soup = BeautifulSoup(login_result, "lxml")
+            import login
+            result_page = login.distinguish_and_build(soup)
+            if type(result_page) is SuccessPage:
+                result_page.refresh(session)
+            return result_page
 
 
 class Device:
@@ -101,6 +110,11 @@ class SuccessPage:
 
     def logout_other(self, session: requests.Session):
         return Device.logout_sid(self.online_other_uid, session)
+
+    def refresh(self, session: requests.Session):
+        new_page = session.get("http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1").text
+        new_soup = BeautifulSoup(new_page, "lxml")
+        self.parse_base_info(new_soup)
 
     def __init__(self, soup: BeautifulSoup):
         self.parse_other_online(soup)
