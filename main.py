@@ -1,104 +1,113 @@
 #!/usr/bin/env python3
-import argparse, getpass, json, os, re
-from sessionreq import connect_to_ipgw_by_unpw
-from parse_login_result import parse_login_result, get_devices_data, other_account, base_info, drop_device
+import argparse, getpass, os, requests, json
+from login import login, read_settings_into_session, print_fail_auth, print_login_successful, read_unpw_from_settings
+from requestresult import UnionAuth, SuccessPage, Device
 
 parser = argparse.ArgumentParser(description="NEU ipgw managing client")
-parser.add_argument('-v', '--version', action='version', version='NEU ipgw manage client V1.0 by Neboer')
+parser.add_argument('-v', '--version', action='version',
+                    version='NEU ipgw manage client V1.0 by Neboer\nuse ipgw -h show more info')
 parser.add_argument('-i', '--login', action='store_true', help='login with stored NEU-pass username and password',
                     dest='login')
 parser.add_argument('-u', '--username', default=None, help='set a username to login/logout', dest='username')
 parser.add_argument('-o', action='store_true', help='log out all devices connected to the network', dest='logout_all')
+parser.add_argument('--nocookie', action='store_true', help='request without cookies and neither store them',
+                    dest='logout_all')
+parser.add_argument('--recookie', action='store_true', help='request without cookies but store them', dest='logout_all')
 # parser.add_argument('--self', action='store_true', help='if set, logout or query your current device only.')
 # parser.add_argument('--other', action='store_true', help='if set, just logout or query your other devices.')
 parser.add_argument('--logout', default=None, help='logout specified id', dest='uid')
-parser.add_argument('-q', '--quiet', action='store_true', default=None, help='quiet mode, no output')
-parser.add_argument('-c', '--current', action="store_true", help='list devices and show the detail info of each device')
+# parser.add_argument('-c', '--current', action="store_true", help='list devices and show the detail info of each device')
 # parser.add_argument('-s', '--status', action='store_true', default=None,
 #                     help='show the detail of your ipgw account, needs web center\'s password. ')
 parser.add_argument('--config', default=None, help='open configure file with specific text editor.')
-parser.add_argument('--change_location', default=None, help='change config file location which stored in the code',
-                    dest='config_file_location')
 args = parser.parse_args()
 
-homepath = os.getenv("HOME")
-setting_file_location = homepath + "/.ipgw-py-manager/settings.json"
-with open(setting_file_location, "r") as setting_file:
-    settings = json.load(setting_file)
+setting_file_location = os.getenv("HOME") + "/.ipgw-py-manager/settings.json"
+with open(setting_file_location, "r") as file:
+    settings = json.load(file)
+flags_sum = args.login + args.logout_all + (args.uid is not None)
+if flags_sum == 0:
+    if args.config:
+        os.system(args.config + " " + setting_file_location)
+        exit(0)
 
+if flags_sum > 1:
+    print("error, multi-action is not allowed")
 
-def normal_login(username, password):
-    if username == "" or password == "":
-        print("username or password is empty, exit.")
-        exit(1)
-    result = connect_to_ipgw_by_unpw(username, password, settings)
-    with open(setting_file_location, "w") as setting_file:
-        json.dump(settings, setting_file, indent=4)
-    if type(result) is int:
-        if result == -1:
-            print("fail 5 times, ip will be locked for 1 min")
-            return
-        print("username or password error, last try time " + str(result))
-        return
-    else:
-        login_data_soup = parse_login_result(result)
-        ifOtherAccountLoginUid = other_account(result)
-        if ifOtherAccountLoginUid:
-            print("other account login, uid:" + ifOtherAccountLoginUid)
-        else:
-            return base_info(login_data_soup), get_devices_data(login_data_soup)
-        #     basicInformation =
-        #     print("account: {}\nip: {}\nconsumed: {}\nonline: {}\n".format(basicInformation[0], basicInformation[1],
-        #                                                                    basicInformation[2], basicInformation[3]))
-        # for device in
-        #     print(device)
-
-
-def print_login_result(info_and_basic_data_tuple: (tuple, list)):
-    if not info_and_basic_data_tuple:
-        return
-    basic_information = info_and_basic_data_tuple[0]
-    print("account: {}\nip: {}\nconsumed: {}\nonline: {}\n".format(basic_information[0], basic_information[1],
-                                                                   basic_information[2], basic_information[3]))
-    for device in info_and_basic_data_tuple[1]:
-        print(device)
-
+global_session = requests.session()
+if args.nocookie or args.recookie:
+    read_settings_into_session(settings, global_session, False)
+else:
+    read_settings_into_session(settings, global_session, True)
 
 if args.login:
     if args.username:  # 如果用户指定了用户名，则用指定的用户名登录
         password = getpass.getpass()
-        print_login_result(normal_login(args.username, password))
+        login_result = login(global_session, args.username, password)
+        if type(login_result) is UnionAuth:
+            print_fail_auth(login_result)
+        elif type(login_result) is SuccessPage:
+            print_login_successful(login_result)
+        else:
+            print("unknown request result.")
     else:
-        print_login_result(normal_login(settings["unity_login"]["username"],
-                                        settings["unity_login"]["password"]))  # use default settings
+        result = login(global_session)
+        if type(result) is UnionAuth:  # cookie错误或没有cookie。
+            print("cookie error. login with stored username.")
+            global_session.cookies.clear()
+            unpw = read_unpw_from_settings(settings)
+            result = result.login(unpw[0], unpw[1], global_session)
+            if type(result) is UnionAuth:
+                print_fail_auth(result)
+            elif result is None:
+                print("unknown request result")
+        elif result is None:
+            print("unknown request result")
+        else:
+            print_login_successful(result)
 
 if args.uid:
-    drop_device(args.uid)
-    print("drop request sent")
+    if Device.logout_sid(args.uid, global_session):
+        print("logout {} successful".format(args.uid))
+    else:
+        print("logout {} error".format(args.uid))
 
 if args.logout_all:
-    if args.username:
+    if args.username:  # 如果用户指定了用户名，则用指定的用户名登录
         password = getpass.getpass()
-        device_info_list = normal_login(args.username, password)[1]
-        for device in device_info_list:
-            device.logout()
-            print("drop request sent ", device.uid)
+        login_result = login(global_session, args.username, password)
+        if type(login_result) is UnionAuth:
+            print_fail_auth(login_result)
+        elif type(login_result) is SuccessPage:
+            for device in login_result.device_list:  # type: Device
+                if device.logout(global_session):
+                    print("logout {} successful".format(device.sid))
+                else:
+                    print("logout {} error".format(device.sid))
+        else:
+            print("unknown request result.")
     else:
-        device_info_list = normal_login(settings["unity_login"]["username"], settings["unity_login"]["password"])[1]
-        for device in device_info_list:
-            device.logout()
-            print("drop request sent ", device.uid)
+        result = login(global_session)
+        if type(result) is UnionAuth:  # cookie错误或没有cookie。
+            print("cookie error. login with stored username.")
+            global_session.cookies.clear()
+            unpw = read_unpw_from_settings(settings)
+            result = result.login(unpw[0], unpw[1], global_session)
+            if type(result) is UnionAuth:
+                print_fail_auth(result)
+            elif result is None:
+                print("unknown request result")
+        elif result is None:
+            print("unknown request result")
+        else:
+            for device in result.device_list:  # type: Device
+                if device.logout(global_session):
+                    print("logout {} successful".format(device.sid))
+                else:
+                    print("logout {} error".format(device.sid))
 
-if args.config:
-    os.system(args.config + " " + setting_file_location)
-    exit(0)
-
-if args.config_file_location:
-    abspath = os.path.realpath(__file__)
-    print("rewrite default config path in ", abspath)
-    thisfile = open(abspath, 'r+')
-    newfiledata = re.sub(r"setting_file_location = \"(.*)\"",
-                         "setting_file_location = \"" + args.config_file_location + "\"", thisfile.read())
-    print(newfiledata)
-    thisfile.close()
-    exit(0)
+if args.recookie:
+    new_settings_content = settings["ipgw_cookie_jar"].update(
+        requests.utils.dict_from_cookiejar(global_session.cookies))
+    with open(setting_file_location, "w") as setting_file:
+        json.dump(new_settings_content, setting_file, indent=4)

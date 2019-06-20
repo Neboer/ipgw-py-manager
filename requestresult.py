@@ -9,8 +9,7 @@ class UnionAuth:  # 代表一个统一认证页面。
     form_destination = None
     form_execution = None
 
-    def __init__(self, text: str):
-        soup = BeautifulSoup(text, "lxml")
+    def __init__(self, soup: BeautifulSoup):
         if soup.find("title").text == "智慧东大--统一身份认证":
             fail_info: Tag = soup.find("span", {"id": "errormsghide"})
             if fail_info:
@@ -20,7 +19,7 @@ class UnionAuth:  # 代表一个统一认证页面。
             self.form_lt_string = form.find("input", {'id': 'lt'}).attrs["value"]
             self.form_execution = form.find("input", {'name': 'execution'}).attrs["value"]
         else:
-            self.locked = False
+            self.locked = True
 
     def login(self, username, password, session: requests.Session):
         form_data = {
@@ -31,7 +30,9 @@ class UnionAuth:  # 代表一个统一认证页面。
             'execution': self.form_execution,
             '_eventId': 'submit'
         }
-        return session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data)
+        import login
+        return login.distinguish_and_build(
+            BeautifulSoup(session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text, "lxml"))
 
 
 class Device:
@@ -71,7 +72,7 @@ class Device:
                self.duration + ' ' + "consume: " + self.flow + ' ' + current + ' uid: ' + str(self.sid)
 
 
-class Success_page:
+class SuccessPage:
     online_other_uid = None
     base_info = ()
     device_list = []
@@ -97,8 +98,7 @@ class Success_page:
                 current_device.is_current = True
             self.device_list.append(current_device)
 
-    def __init__(self, text: str):
-        soup = BeautifulSoup(text, "lxml")
+    def __init__(self, soup: BeautifulSoup):
         self.parse_other_online(soup)
         if not self.online_other_uid:
             self.parse_base_info(soup)
