@@ -80,7 +80,7 @@ class SuccessPage:
     def parse_other_online(self, success_soup: BeautifulSoup):
         other_soup: Tag = success_soup.find("a", {"class": "btn btn-block btn-dark"})
         if other_soup:
-            self.online_other_uid = re.search("do_drop\\('(.*)'\\)", other_soup.attrs["onclick"])
+            self.online_other_uid = re.search("do_drop\\('(.*)'\\)", other_soup.attrs["onclick"]).group(1)
 
     def parse_base_info(self, success_soup: BeautifulSoup):
         info_soup = success_soup.find("form", {"method": "post", "id": "fm1"}, class_="fm-v")  # type: Tag
