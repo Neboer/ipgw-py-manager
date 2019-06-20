@@ -30,9 +30,9 @@ class UnionAuth:  # 代表一个统一认证页面。
             'execution': self.form_execution,
             '_eventId': 'submit'
         }
+        soup = BeautifulSoup(session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text,"lxml")
         import login
-        return login.distinguish_and_build(
-            BeautifulSoup(session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text, "lxml"))
+        return login.distinguish_and_build(soup)
 
 
 class Device:
