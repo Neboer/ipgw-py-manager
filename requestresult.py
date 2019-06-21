@@ -86,6 +86,7 @@ class SuccessPage:
     online_other_uid = None
     base_info = ()
     device_list = []
+    status = 0  # 0正常 1关闭服务 2欠费
 
     def parse_other_online(self, success_soup: BeautifulSoup):
         other_soup: Tag = success_soup.find("a", {"class": "btn btn-block btn-dark"})
@@ -95,7 +96,14 @@ class SuccessPage:
     def parse_base_info(self, success_soup: BeautifulSoup):
         info_soup = success_soup.find("form", {"method": "post", "id": "fm1"}, class_="fm-v")  # type: Tag
         info = tuple(info_soup.stripped_strings)
-        self.base_info = (info[1], info[3], info[5], info[7])
+        if len(info) < 7:
+            if info[0].find("余额不足月租，无法使用") != -1:
+                self.status = 2
+            else:
+                print(info)
+                raise NameError("Unknown response")
+        else:
+            self.base_info = (info[1], info[3], info[5], info[7])
 
     def parse_devices_list(self, success_soup: BeautifulSoup):
         device_info_soup: Tag = success_soup.find("table", {'class': 'table'})

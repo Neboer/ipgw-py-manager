@@ -38,13 +38,18 @@ def login(session: requests.Session, username=None, password=None):
 
 
 def print_login_successful(page: SuccessPage):
-    if page.online_other_uid:
-        print("other online, uid:", page.online_other_uid)
-    else:
-        print("account: {}\nip: {}\nconsumed: {}\nonline: {}\n".format(page.base_info[0], page.base_info[1],
+    if page.status == 0:
+        if page.online_other_uid:
+            print("other online, uid:", page.online_other_uid)
+        else:
+            print("account: {}\nip: {}\nconsumed: {}\nonline: {}\n".format(page.base_info[0], page.base_info[1],
                                                                        page.base_info[2], page.base_info[3]))
-    for device in page.device_list:
-        print(device)
+        for device in page.device_list:
+            print(device)
+    elif page.status == 1:
+        print("account locked, unlock first.")
+    elif page.status == 2:
+        print("insiffent funds.")
 
 
 def print_fail_auth(page: UnionAuth):
