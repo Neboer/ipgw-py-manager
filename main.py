@@ -20,7 +20,7 @@ if flags_sum > 1:
     print("error, multi-action is not allowed")
 
 global_session = requests.session()
-global_session.max_redirects = 5
+global_session.max_redirects = 2
 cookie_is_set = False
 if args.nocookie or args.recookie or (args.username is not None):
     read_settings_into_session(settings, global_session, False)
