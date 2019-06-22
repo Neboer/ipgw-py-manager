@@ -8,9 +8,29 @@
 由于校内网关切换到统一认证，原有的用户名+密码登录网关的方式彻底失效。新版本的ipgw管理程序使用python编写，直接可以支持跨平台使用。
 
 通过对学校ipgw的API提取解析后得到的纯粹的客户端，拥有高度的灵活性和定制性。
+## 准备
+由于程序还没有编写configure模块，因此用户需要自行准备所有依赖。
+ - python3.X (强烈推荐python3.7安装)
+ 	- requests (一般会默认安装的)
+ 	- beautifulsoup4
+ 	- lxml
 
-**程序尚未编写安装模块，程序的安装将优先支持linux或BSD，其次会支持windows。直接运行main.py并保证所有依赖项都在同一个目录下即可运行。**
+## 安装
+未来会打包成标准windows/linux安装包来发行，现在先用makefile凑合一下，诸位看官看个笑话，莫怪我。
+```
+make
+sudo make install
+```
+## 配置
+```
+ipgw --config vim
+```
+更改unity_login字段的username和password为你统一认证登录的username/password。更改完成后保存即可。
 ## 用法
+```
+ipgw -i
+```
+最好的一个写法，简单明快，优先使用设置中保存的cookie登录网关，如果cookie无效，则使用设置中保存的用户名密码登录！
 ```
 ipgw -i -u 201XXXXX | ipgw --login --username 201XXXXX
 ```
