@@ -32,8 +32,8 @@ class UnionAuth:  # 代表一个统一认证页面。
         }
         login_result = session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text
         soup = BeautifulSoup(login_result, "lxml")
-        import login
-        result_page = login.distinguish_and_build(soup)
+        import show_result
+        result_page = show_result.distinguish_and_build(soup)
         return result_page
 
 
