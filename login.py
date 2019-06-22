@@ -14,27 +14,29 @@ def distinguish_and_build(page_soup: BeautifulSoup):
         return None
 
 
-def login(session: requests.Session, username=None, password=None):
+def login(session: requests.Session, username, password):
+    # 优先使用cookie登录。如果cookie不行，则会使用用户名密码登录。这个函数只能返回两种结果，要么是密码错误所导致的fail Unionauth，要么是登录成功的界面。main本身不关心具体实现的细节.
     try:
-        login_result_soup = session.get('http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1')
-    except TooManyRedirects:
-        print("Cookies are out of date, rebuilding.")
+        first_login_response = session.get('http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1')
+    except TooManyRedirects:  # cookie过期，学校会在first反复重定向。
+        print("cookies are out of date, login with default username")
         session.cookies.clear()
-        login_result_soup = session.get('http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1')
-    temp_login = distinguish_and_build(BeautifulSoup(login_result_soup.text, "lxml"))
-    if type(temp_login) is SuccessPage:
-        temp_login.refresh(session)
-        return temp_login
-    elif type(temp_login) is UnionAuth:
-        if username is not None:
-            if username != "" and password != "":
-                return temp_login.login(username, password, session)
-            else:
-                print("username or password cannot be empty")
+        first_login_response = session.get('http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1')
+    first_login_result = distinguish_and_build(BeautifulSoup(first_login_response.text, "lxml"))
+    if type(first_login_result) is SuccessPage:  # 第一遍就登录进去了。
+        first_login_result.refresh(session)
+        return first_login_result
+    elif type(first_login_result) is UnionAuth:  # 返回统一认证，说明没有cookie或者cookie被清空。
+        auth_login_result = first_login_result.login(username, password, session)
+        if type(auth_login_result) is UnionAuth and auth_login_result.last_temp == 5:
+            # 出现玄学问题，登录结果并不返回任何错误信息。这个问题的产生和错误的第三段cookie异常很有关系。解决此现象的方法只有一个，清除所有cookie，然后重新登录。
+            print("cookies may be modified, login with default username.")
+            session.cookies.clear()
+            return login(session, username, password)
         else:
-            return temp_login
+            return auth_login_result
     else:
-        return None
+        raise NameError("unknown response")
 
 
 def print_login_successful(page: SuccessPage):
@@ -49,7 +51,7 @@ def print_login_successful(page: SuccessPage):
     elif page.status == 1:
         print("account locked, unlock first.")
     elif page.status == 2:
-        print("insiffent funds.")
+        print("insufficient funds.")
 
 
 def print_fail_auth(page: UnionAuth):

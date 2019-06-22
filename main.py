@@ -5,7 +5,7 @@ from requestresult import UnionAuth, SuccessPage, Device
 
 parser = argparse.ArgumentParser(description="NEU ipgw managing client")
 parser.add_argument('-v', '--version', action='version',
-                    version='NEU ipgw manage client V3.0 by Neboer\nuse ipgw -h show more info')
+                    version='NEU ipgw manage client V4.0 formal edition by Neboer!')
 parser.add_argument('-i', '--login', action='store_true', help='login with stored NEU-pass username and password',
                     dest='login')
 parser.add_argument('-u', '--username', default=None, help='set a username to login/logout', dest='username')
@@ -36,42 +36,30 @@ if flags_sum > 1:
 
 global_session = requests.session()
 global_session.max_redirects = 5
-if args.nocookie or args.recookie:
+cookie_is_set = False
+if args.nocookie or args.recookie or (args.username is not None):
     read_settings_into_session(settings, global_session, False)
 else:
     read_settings_into_session(settings, global_session, True)
+    cookie_is_set = True
 
 if args.login:
     if args.username:  # 如果用户指定了用户名，则用指定的用户名登录
         password = getpass.getpass()
-        login_result = login(global_session, args.username, password)
-        if type(login_result) is UnionAuth:
-            print_fail_auth(login_result)
-        elif type(login_result) is SuccessPage:
-            print_login_successful(login_result)
-        else:
-            raise NameError("unknown request result.")
+        username = args.username
     else:
-        result = login(global_session)
-        if type(result) is UnionAuth:  # cookie错误或没有cookie。
-            if not args.nocookie and not args.recookie:
-                print("cookie empty or error. login with stored username.")
-            unpw = read_unpw_from_settings(settings)
-            result = result.login(unpw[0], unpw[1], global_session)
-            if type(result) is UnionAuth and result.last_temp < 5:
-                print_fail_auth(result)
-            elif type(result) is UnionAuth and result.last_temp == 5:
-                print("cookies may be modified. force reset. please connect again.")
-                global_session.cookies.clear()
-
-            elif result is None:
-                raise NameError("unknown request result.")
-            else:
-                print_login_successful(result)
-        elif result is None:
-            raise NameError("unknown request result.")
-        else:
-            print_login_successful(result)
+        username, password = read_unpw_from_settings(settings)
+    if (not username) or (not password):
+        print("username or password is empty, exit.")
+        exit(1)
+    result = login(global_session, username, password)
+    if type(result) is UnionAuth:
+        print_fail_auth(result)
+    elif type(result) is SuccessPage:
+        result.refresh(global_session)
+        print_login_successful(result)
+    else:
+        raise NameError("unknown response.")
 
 if args.uid:
     if Device.logout_sid(args.uid, global_session):
@@ -82,35 +70,23 @@ if args.uid:
 if args.logout_all:
     if args.username:  # 如果用户指定了用户名，则用指定的用户名登录
         password = getpass.getpass()
-        login_result = login(global_session, args.username, password)
-        if type(login_result) is UnionAuth:
-            print_fail_auth(login_result)
-        elif type(login_result) is SuccessPage:
-            for device in login_result.device_list:  # type: Device
-                if device.logout(global_session):
-                    print("logout {} successful".format(device.sid))
-                else:
-                    print("logout {} error".format(device.sid))
-        else:
-            raise NameError("unknown request result.")
+        username = args.username
     else:
-        result = login(global_session)
-        if type(result) is UnionAuth:  # cookie错误或没有cookie。
-            print("cookie error. login with stored username.")
-            unpw = read_unpw_from_settings(settings)
-            result = result.login(unpw[0], unpw[1], global_session)
-            if type(result) is UnionAuth:
-                print_fail_auth(result)
-            elif result is None:
-                raise NameError("unknown request result.")
-        elif result is None:
-            raise NameError("unknown request result.")
-        else:
-            for device in result.device_list:  # type: Device
-                if device.logout(global_session):
-                    print("logout {} successful".format(device.sid))
-                else:
-                    print("logout {} error".format(device.sid))
+        username, password = read_unpw_from_settings(settings)
+    if (not username) or (not password):
+        print("username or password is empty, exit.")
+        exit(1)
+    result = login(global_session, username, password)
+    if type(result) is UnionAuth:
+        print_fail_auth(result)
+    elif type(result) is SuccessPage:
+        for device in result.device_list:
+            if device.logout(global_session):
+                print("logout {} successful".format(device.sid))
+            else:
+                print("logout {} error".format(device.sid))
+    else:
+        raise NameError("unknown response.")
 
 if not args.nocookie:
     new_cookies = requests.utils.dict_from_cookiejar(global_session.cookies)

@@ -1,6 +1,5 @@
 import requests, re
 from bs4 import BeautifulSoup, Tag
-from requests import Timeout, TooManyRedirects
 
 
 class UnionAuth:  # 代表一个统一认证页面。
@@ -31,18 +30,11 @@ class UnionAuth:  # 代表一个统一认证页面。
             'execution': self.form_execution,
             '_eventId': 'submit'
         }
-        try:
-            login_result = session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text
-        except TooManyRedirects:
-            session.cookies.clear()
-            login_result = session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text
-        else:
-            soup = BeautifulSoup(login_result, "lxml")
-            import login
-            result_page = login.distinguish_and_build(soup)
-            if type(result_page) is SuccessPage:
-                result_page.refresh(session)
-            return result_page
+        login_result = session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data).text
+        soup = BeautifulSoup(login_result, "lxml")
+        import login
+        result_page = login.distinguish_and_build(soup)
+        return result_page
 
 
 class Device:
@@ -86,26 +78,30 @@ class SuccessPage:
     online_other_uid = None
     base_info = ()
     device_list = []
-    status = 0  # 0正常 1关闭服务 2欠费
+    status = 0  # 0正常 1关闭服务 2欠费 3其他设备在线
 
-    def parse_other_online(self, success_soup: BeautifulSoup):
+    def parse_status(self, success_soup: BeautifulSoup):
         other_soup: Tag = success_soup.find("a", {"class": "btn btn-block btn-dark"})
         if other_soup:
             self.online_other_uid = re.search("do_drop\\('(.*)'\\)", other_soup.attrs["onclick"]).group(1)
+            self.status = 3
+            return 3
+        sufficient_soup: Tag = success_soup.find("label", {"class": "fl-label", "style": "color:red;"})
+        if sufficient_soup:
+            self.status = 2
+            return 2
+        return 0
 
     def parse_base_info(self, success_soup: BeautifulSoup):
         info_soup = success_soup.find("form", {"method": "post", "id": "fm1"}, class_="fm-v")  # type: Tag
         info = tuple(info_soup.stripped_strings)
         if len(info) < 7:
-            if info[0].find("余额不足月租，无法使用") != -1:
-                self.status = 2
-            else:
-                print(info)
-                raise NameError("Unknown response")
+            raise NameError("Unknown response")
         else:
             self.base_info = (info[1], info[3], info[5], info[7])
 
     def parse_devices_list(self, success_soup: BeautifulSoup):
+        self.device_list.clear()
         device_info_soup: Tag = success_soup.find("table", {'class': 'table'})
         device_soup_array: [Tag] = device_info_soup.find_all("tr", {'id': 'tr_'})
         for single_device_soup in device_soup_array:  # type: Tag
@@ -122,10 +118,9 @@ class SuccessPage:
     def refresh(self, session: requests.Session):
         new_page = session.get("http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1").text
         new_soup = BeautifulSoup(new_page, "lxml")
-        self.parse_base_info(new_soup)
+        self.__init__(new_soup)
 
     def __init__(self, soup: BeautifulSoup):
-        self.parse_other_online(soup)
-        if not self.online_other_uid:
+        if self.parse_status(soup) == 0:
             self.parse_base_info(soup)
         self.parse_devices_list(soup)
