@@ -16,7 +16,7 @@
  	- lxml
 
 ## 安装
-未来会打包成标准windows/linux安装包来发行，现在先用makefile凑合一下，诸位看官看个笑话，莫怪我。
+未来会打包成标准windows/linux安装包来发行、目前仅有Makefile。
 ```
 make
 sudo make install
@@ -31,6 +31,10 @@ ipgw --config vim
 ipgw -i
 ```
 最好的一个写法，简单明快，优先使用设置中保存的cookie登录网关，如果cookie无效，则使用设置中保存的用户名密码登录！
+```
+ipgw -o
+```
+同样非常简单，登录网关后下线连接到网络的一切设备。
 ```
 ipgw -i -u 201XXXXX | ipgw --login --username 201XXXXX
 ```
