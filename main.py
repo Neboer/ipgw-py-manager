@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 import argparse, getpass, os, requests, json
 from login import login, read_settings_into_session, print_fail_auth, print_login_successful, read_unpw_from_settings
 from requestresult import UnionAuth, SuccessPage, Device
@@ -22,7 +22,7 @@ parser.add_argument('--other', action='store_true', help='logout other account w
 parser.add_argument('--config', default=None, help='open configure file with specific text editor.')
 args = parser.parse_args()
 
-setting_file_location = os.getenv("HOME") + "/.ipgw-py-manager/settings.json"
+setting_file_location = os.path.join( os.getenv("HOME") , ".ipgw-py-manager", "settings.json" )
 with open(setting_file_location, "r") as file:
     settings = json.load(file)
 flags_sum = args.login + args.logout_all + (args.uid is not None)
