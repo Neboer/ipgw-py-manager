@@ -92,13 +92,17 @@ class SuccessPage:
             return 2
         return 0
 
+    def _get_detailed_traffic_and_online_seconds(self, session: requests.Session):
+        import random
+        key = random.random() * (100000 + 1)
+        data = {"action": "get_online_info", "key": key}
+        mixed_data = session.post("https://ipgw.neu.edu.cn/include/auth_action.php?k=" + str(key), data=data)
+
     def parse_base_info(self, success_soup: BeautifulSoup):
         info_soup = success_soup.find("form", {"method": "post", "id": "fm1"}, class_="fm-v")  # type: Tag
         info = tuple(info_soup.stripped_strings)
-        if len(info) < 7:
-            raise NameError("Unknown response")
-        else:
-            self.base_info = (info[1], info[3], info[5], info[7])
+
+        self.base_info = (info[1], info[3], info[4][5:-1], info[5][5:-1])
 
     def parse_devices_list(self, success_soup: BeautifulSoup):
         self.device_list.clear()
