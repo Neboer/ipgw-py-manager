@@ -76,7 +76,7 @@ class Device:
 
 class SuccessPage:
     online_other_uid = None
-    base_info = ()
+    base_info = []
     device_list = []
     status = 0  # 0正常 1关闭服务 2欠费 3其他设备在线
 
@@ -92,17 +92,19 @@ class SuccessPage:
             return 2
         return 0
 
-    def _get_detailed_traffic_and_online_seconds(self, session: requests.Session):
+    def get_detailed_traffic_and_online_seconds(self, session: requests.Session):
         import random
         key = random.random() * (100000 + 1)
         data = {"action": "get_online_info", "key": key}
-        mixed_data = session.post("https://ipgw.neu.edu.cn/include/auth_action.php?k=" + str(key), data=data)
+        mixed_data = session.post("https://ipgw.neu.edu.cn/include/auth_action.php?k=" + str(key),
+                                  data=data).text.split(",")
+        self.base_info[2] = int(mixed_data[0])  # consumed_traffic_bytes
+        self.base_info[3] = int(mixed_data[1])  # online_time_seconds
 
     def parse_base_info(self, success_soup: BeautifulSoup):
         info_soup = success_soup.find("form", {"method": "post", "id": "fm1"}, class_="fm-v")  # type: Tag
         info = tuple(info_soup.stripped_strings)
-
-        self.base_info = (info[1], info[3], info[4][5:-1], info[5][5:-1])
+        self.base_info = [info[1], info[3], None, None]
 
     def parse_devices_list(self, success_soup: BeautifulSoup):
         self.device_list.clear()
@@ -118,11 +120,6 @@ class SuccessPage:
 
     def logout_other(self, session: requests.Session):
         return Device.logout_sid(self.online_other_uid, session)
-
-    def refresh(self, session: requests.Session):
-        new_page = session.get("http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1").text
-        new_soup = BeautifulSoup(new_page, "lxml")
-        self.__init__(new_soup)
 
     def __init__(self, soup: BeautifulSoup):
         if self.parse_status(soup) == 0:
