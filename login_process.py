@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests import TooManyRedirects
 import getpass
-from requestresult import SuccessPage, UnionAuth
+from requestresult import SuccessPage, UnionAuth, Device
 from show_result import distinguish_and_build, read_unpw_from_settings, print_login_successful, print_fail_auth
 
 
@@ -48,7 +48,14 @@ def whole_process(pass_username: str, session: requests.Session, settings: dict,
         if login:
             if result.status == 0:
                 result.get_detailed_traffic_and_online_seconds(session)
-            print_login_successful(result)
+            other_online_choice = print_login_successful(result)
+            if other_online_choice == 2:  # logout and re-login
+                Device.logout_sid(result.online_other_uid, session)
+                whole_process(pass_username, session, settings, login)
+                return 0
+            elif other_online_choice == 3:  # just re-login
+                whole_process(pass_username, session, settings, login)
+                return 0
         else:
             for device in result.device_list:
                 if device.logout(session):

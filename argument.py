@@ -4,7 +4,7 @@ import argparse
 def parse_argument():
     parser = argparse.ArgumentParser(description="NEU ipgw managing client")
     parser.add_argument('-v', '--version', action='version',
-                        version='NEU ipgw manage client V5.1 formal edition by Neboer!')
+                        version='NEU ipgw manage client V5.1.1 formal edition by Neboer!')
     parser.add_argument('-i', '--login', action='store_true', help='login with stored NEU-pass username and password',
                         dest='login')
     parser.add_argument('-u', '--username', default=None, help='set a username to login/logout', dest='username')
