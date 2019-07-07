@@ -16,13 +16,13 @@ def temp_login(session: requests.Session, username, password):
         first_login_response = session.get('http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1')
     first_login_result = distinguish_and_build(BeautifulSoup(first_login_response.text, "lxml"))
     if type(first_login_result) is SuccessPage:  # 第一遍就登录进去了。
-        first_login_result.refresh(session)
+        first_login_result.get_detailed_traffic_and_online_seconds(session)
         return first_login_result
     elif type(first_login_result) is UnionAuth:  # 返回统一认证，说明没有cookie或者cookie被清空。
         auth_login_result = first_login_result.login(username, password, session)
         if type(auth_login_result) is UnionAuth and auth_login_result.last_temp == 5:
             # 出现玄学问题，登录结果并不返回任何错误信息。这个问题的产生和错误的第三段cookie异常很有关系。解决此现象的方法只有一个，清除所有cookie，然后重新登录。
-            print("cookies may be modified, login with default username.")
+            print("cookies may be modified or too old, login with default username.")
             session.cookies.clear()
             return temp_login(session, username, password)
         else:
@@ -45,7 +45,7 @@ def whole_process(pass_username: str, session: requests.Session, settings: dict,
         print_fail_auth(result)
     elif type(result) is SuccessPage:
         if login:
-            result.refresh(session)
+            result.get_detailed_traffic_and_online_seconds(session)
             print_login_successful(result)
         else:
             for device in result.device_list:

@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from requestresult import SuccessPage, UnionAuth
+from datetime import timedelta
 
 
 def distinguish_and_build(page_soup: BeautifulSoup):
@@ -18,8 +19,17 @@ def print_login_successful(page: SuccessPage):
         if page.online_other_uid:
             print("other online, uid:", page.online_other_uid)
         else:
-            print("account: {}\nip: {}\nconsumed: {}\nonline: {}\n".format(page.base_info[0], page.base_info[1],
-                                                                       page.base_info[2], page.base_info[3]))
+            if page.base_info[2] <= 1e6:
+                print_number = page.base_info[2] / 1000
+                flow_format = "{:d}K"
+            else:
+                print_number = page.base_info[2] / 1e6
+                flow_format = "{:.2f}M"
+            online_time = timedelta(seconds=page.base_info[3])
+            print(("account: {}\nip: {}\nconsumed: " + flow_format + "\nonline_time: {}\n").format(page.base_info[0],
+                                                                                                   page.base_info[1],
+                                                                                                   print_number,
+                                                                                                   str(online_time)))
         for device in page.device_list:
             print(device)
     elif page.status == 1:
