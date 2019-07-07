@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 import os, requests, json
 from show_result import read_settings_into_session
 from login_process import whole_process

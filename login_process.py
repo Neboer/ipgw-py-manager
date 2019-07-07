@@ -16,7 +16,8 @@ def temp_login(session: requests.Session, username, password):
         first_login_response = session.get('http://ipgw.neu.edu.cn/srun_cas.php?ac_id=1')
     first_login_result = distinguish_and_build(BeautifulSoup(first_login_response.text, "lxml"))
     if type(first_login_result) is SuccessPage:  # 第一遍就登录进去了。
-        first_login_result.get_detailed_traffic_and_online_seconds(session)
+        if first_login_result.status == 0:
+            first_login_result.get_detailed_traffic_and_online_seconds(session)
         return first_login_result
     elif type(first_login_result) is UnionAuth:  # 返回统一认证，说明没有cookie或者cookie被清空。
         auth_login_result = first_login_result.login(username, password, session)
@@ -45,7 +46,8 @@ def whole_process(pass_username: str, session: requests.Session, settings: dict,
         print_fail_auth(result)
     elif type(result) is SuccessPage:
         if login:
-            result.get_detailed_traffic_and_online_seconds(session)
+            if result.status == 0:
+                result.get_detailed_traffic_and_online_seconds(session)
             print_login_successful(result)
         else:
             for device in result.device_list:
