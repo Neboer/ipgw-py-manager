@@ -6,8 +6,7 @@
     },
     "unity_login": {
         "username": "",
-        "password": "",
-        "cookie": ""
+        "password": ""
     },
     "ipgw_cookie_jar": {}
 }

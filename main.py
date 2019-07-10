@@ -8,8 +8,11 @@ from requestresult import Device
 args = parse_argument()
 
 setting_file_location = os.path.join(os.getenv("HOME"), ".ipgw-py-manager", "settings.json")
-with open(setting_file_location, "r") as file:
-    settings = json.load(file)
+try:
+    with open(setting_file_location, "r") as file:
+        settings = json.load(file)
+except FileNotFoundError:
+    print("first time to use, please install configure file to user dictionary by running install.py.")
 flags_sum = args.login + args.logout_all + (args.uid is not None)
 if flags_sum == 0:
     if args.config:
