@@ -18,7 +18,7 @@
  	- lxml
 
 ## 安装
-未来会打包成标准windows/linux安装包来发行、目前仅有Makefile。
+执行sudo install.py，然后ipgw --config vim
 ```
 make
 sudo make install
