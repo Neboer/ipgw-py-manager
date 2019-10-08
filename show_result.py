@@ -27,10 +27,7 @@ def print_login_successful(page: SuccessPage):
         min, sec = divmod(page.base_info[3], 60)
         hour, min = divmod(min, 60)
         online_time = "{}:{:02d}:{:02d}".format(hour, min, sec)
-        print(("account: {}\nip: {}\nconsumed: " + flow_format + "\nonline_time: {}\n").format(page.base_info[0],
-                                                                                               page.base_info[1],
-                                                                                               print_number,
-                                                                                               online_time))
+        print(("account: {}\nip: {}\nconsumed: " + flow_format + "\nonline_time: {}\n").format(page.base_info[0],page.base_info[1],print_number,online_time))
     elif page.status == 1:
         print("account locked, unlock first.")
     elif page.status == 2:
