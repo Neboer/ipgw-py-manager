@@ -1,71 +1,51 @@
 # NEU ipgw manager
+
 ![](https://img.shields.io/badge/NEU-ipgw--manager-blue.svg)
 
 ![](./IPGW.svg)
 
-东北大学新版ipgw网关管理程序。
+东北大学ipgw网关管理程序重制版，仅支持统一身份认证用户名-密码登录
 
-**疫情期间无法在校内完成测试，如果发现有使用问题请尽快issue报告。**
+- 带有TUI(picotui)、GUI(tkinter)、CLI(argprase)三种操作模式，每种操作模式体验基本一致，可以在不同环境、不同平台上使用，操作非常方便。
+- 格式化输出，输出内容为100%的中文，表格内容清晰易读，是对网页信息的高度简化。
+- 兼容性极强，可以识别ipgw的所有状态和页面，比如停止服务、其他设备在线、费用不足等情况，并可以像网页端一样作出操作。
+- 支持多用户管理，同时程序会记录用户最后一次登录的状态等，你可以在登录之后指定下线某个用户。你甚至可以从可以登录的用户中随机挑选用户登录。
+- 配置文件可以很方便的修改，且位置唯一。
 
-由于校内网关切换到统一认证，原有的用户名+密码登录网关的方式彻底失效。新版本的ipgw管理程序使用python编写，直接可以支持跨平台使用。
+使用此脚本管理自己的ipgw连接，可以加快操作ipgw网关的速度，节省时间，无论是联网还是断网都十分方便。
 
-本项目已经分享到先锋网络站群组。
+本项目承诺长期更新，尽量做到功能稳定。目前已经有一个cli版本供使用，TUI和GUI版本正在开发中。
 
-通过对学校ipgw的API提取解析后得到的纯粹的客户端，拥有高度的灵活性和定制性。
-## 准备
-由于程序还没有编写configure模块，因此用户需要自行准备所有依赖。
- - python3.X (强烈推荐python3.7安装)
- 	- requests (一般会默认安装的)
- 	- beautifulsoup4
- 	- lxml
+## 安装与部署
 
-## 安装
-执行sudo install.py，然后ipgw --config vim
-```
-make
-sudo make install
-```
-## 配置
-```
-ipgw --config vim
-```
-更改unity_login字段的username和password为你统一认证登录的username/password。更改完成后保存即可。
-## 用法
-```
-ipgw -i
-```
-最好的一个写法，简单明快，优先使用设置中保存的cookie登录网关，如果cookie无效，则使用设置中保存的用户名密码登录！
-```
-ipgw -o
-```
-同样非常简单，登录网关后下线连接到网络的一切设备。
-```
-ipgw -i -u 201XXXXX | ipgw --login --username 201XXXXX
-```
-使用201XXXXX作为pass.neu.edu.cn的账号登录ipgw网关。程序会提示输入密码，输入后即可登录。
+手动安装ipgw-py-manager的方法有些复杂，因为是python脚本。ipgw-py-manager计划在下一个版本发布到pip软件源中，这样安装就会变得非常简单了。
 
-其中-i是login，-u是username，在不指定username时，程序会根据设置文件中保存的账号密码登录网关。
-```
-ipgw -o -u 201XXXXX
-```
-登出指定账号上登录的任何设备，其中，-o意为登出模式，如果没有指定username，则使用设置中默认的账号密码登出所有设备。
-```
-ipgw --logout <uid>
-```
-登出指定uid的设备。由于ipgw的特殊性，该操作并不需要登录账号。
+### 1. 安装Python
 
-uid是每个账号登录设备的一个特殊编号，在--login后，会返回一个设备列表。设备列表的最后一项就是uid，
-只需要将其填入--logout后就可以实现下线了。
-```
-ipgw -c | ipgw --current
-```
-列出当前账号登录的所有ip、使用流量、使用时长，并指出当前登录的ip是否有其他账号登录。该行为并没有API支持，因此暂时没有实现。
-```
-ipgw -s | ipgw --status
-```
-尝试使用设置中保存的校园网网络管理后台账号密码登录网络中心后台，返回已用时长、套餐总额、剩余流量等信息。
-这个功能需要解析网络中心数据的功能，相关模块还在编写中，暂时还不开放使用。
-```
-ipgw --config vim
-```
-使用vim打开配置文件。
+首先，为了运行本程序，你需要一个Python环境。如果你已经有Python环境了，那么Python版本不能低于3.7。程序在设计的时候没有考虑低版本兼容性， 因此请使用尽量高的Python版本运行本程序，确保不会出现问题。
+
+### 2. 安装依赖
+
+其次，你需要安装requirements.txt中的所有包，执行`pip install -r requirements.txt`。
+
+然后，你需要安装`lxml`。lxml用来辅助`beautifulsoup`做HTML文档解析，速度比较快。lxml在Windows上安装只需要执行如下命令：
+`pip install lxml`即可；如果你的操作系统是Linux发行版，那么请参照 [lxml官网](https://lxml.de/installation.html) 上的内容进行安装。
+
+### 3. 添加配置文件
+
+在项目的根目录下，有一个配置文件default_config.json。编辑这个文件的username和password为你自己账号的用户名和密码，同时你也可以多添加几个已知帐号的用户。
+然后把这个文件拷贝到`C:\Users\<你的用户名>\ipgw.json`。注意文件名要改动一下。
+
+这个过程也可以通过执行`install_config.py`快速执行。
+
+### 4. 添加环境变量
+
+现在，`bin/ipgw.ps1`可以执行了。为了更方便的执行代码，你可以把bin文件夹添加进PATH环境变量中。
+
+### 5. 完成！
+
+恭喜，ipgw程序已经成功安装进你的电脑，现在你要做的就是重新打开一个命令行窗口，然后执行`ipgw --help`，看到输出的帮助信息，便成功了。
+
+## 使用
+
+本程序目前只支持命令行使用，具体使用方法请参见[cli用法文档](./cli/README.md)

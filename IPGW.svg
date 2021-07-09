@@ -1,29 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-    <metadata><?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
-        <?xpacket end="w"?></metadata>
-    <defs>
-        <style>
-            .cls-1 {
-            fill: #156586;
-            }
-
-            .cls-1, .cls-2 {
-            fill-rule: evenodd;
-            }
-
-            .cls-2 {
-            fill: #f1ff0c;
-            }
-
-            .cls-3 {
-            fill: #fff;
-            }
-        </style>
-    </defs>
-    <path id="形状_1" class="cls-1"
-          d="M36,52H10L0,62v4L10,76H68v8H18l26,26V92h8v26l10,10h4l10-10V60h8v50l26-26H92V76h26l10-10V62L118,52H60V44h50L84,18V36H76V10L66,0H62L52,10V68H44V18L18,44H36v8Z"/>
-    <path id="椭圆_1" class="cls-2" d="M100.5,99.2A14.4,14.4,0,1,1,86,113.6,14.45,14.45,0,0,1,100.5,99.2Zm1.45-5.76"/>
-    <path id="形状_2" class="cls-2"
-          d="M104.85,106.4V60.32L100.5,56l-5.8,5.76,1.45,2.88L94.7,66.08v8.64l2.9,2.88v1.44l-2.9,2.88v1.44l1.45,1.44v1.44L94.7,87.68v1.44l1.45,1.44L94.7,92v4.32H93.25V106.4h11.6Z"/>
-    <circle id="椭圆_2" class="cls-3" cx="100.5" cy="120.5" r="3.5"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.3.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+     y="0px" width="128" height="128"
+     viewBox="0 0 128 128" style="enable-background:new 0 0 128 128;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill-rule:evenodd;clip-rule:evenodd;fill:#156586;}
+	.st1{fill-rule:evenodd;clip-rule:evenodd;fill:#F1FF0C;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;}
+	.st2{fill:#FFFFFF;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;}
+</style>
+    <path id="形状_1" class="st0" d="M36,52H10L0,62v4l10,10h58v8H18l26,26V92h8v26l10,10h4l10-10V60h8v50l26-26H92v-8h26l10-10v-4
+	l-10-10H60v-8h50L84,18v18h-8V10L66,0h-4L52,10v58h-8V18L18,44h18V52z"/>
+    <path class="st1" d="M104.8,99.9V60.3l-4.3-4.3l-5.8,5.8l1.5,2.9l-1.5,1.4v8.6l2.9,2.9V79l-2.9,2.9v1.4l1.5,1.4v1.4l-1.5,1.4v1.4
+	l1.5,1.4L94.7,92v4.3h-1.5v4.8c-4.3,2.5-7.2,7.1-7.2,12.5c0,7.9,6.4,14.3,14.3,14.4c8,0.1,14.4-6.3,14.5-14.3
+	C114.8,107.3,110.7,101.8,104.8,99.9z"/>
+    <circle id="椭圆_2" class="st2" cx="100.5" cy="120.5" r="3.5"/>
 </svg>
