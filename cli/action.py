@@ -61,11 +61,19 @@ if args.sid:  # 如果用户指定了sid，那么用户一定是想下线这个�
 
 
 def ipgw_main_login():
-    main_ipgw.login(target_user['username'], target_user['password'])
+    return main_ipgw.login(target_user['username'], target_user['password'])
 
 
 while True:
-    ipgw_main_login()
+    current_login_result = ipgw_main_login()
+    if current_login_result == LoginResult.UsernameOrPasswordError:
+        logging.error(f"用户名或密码错误，剩余尝试次数{main_ipgw.last_trial_times}。")
+        exit(5)
+    elif current_login_result == LoginResult.AttemptReachLimit:
+        logging.error("尝试次数达到上限。")
+        exit(15)
+    elif current_login_result == LoginResult.LoginSuccessful:
+        logging.info("登录成功。")
     # 打印登录状态
     current_ipgw_status = main_ipgw.get_ipgw_status()
 

@@ -28,6 +28,8 @@ class IPGW:
             elif type(e) is AttemptReachLimitError:
                 self.last_trial_times = -1
                 return LoginResult.AttemptReachLimit
+            else:
+                raise UnknownPageError
         # 没有异常
         return LoginResult.LoginSuccessful
 
