@@ -1,11 +1,5 @@
 {
-    "users": [
-        {
-            "username": "20180001",
-            "password": "password",
-            "is_default": true
-        }
-    ],
+    "users": [],
     "ua": "",
     "default_kick": "relogin",
     "last_login_username": "",

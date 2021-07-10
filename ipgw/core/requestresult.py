@@ -1,7 +1,9 @@
 import requests, re
 from bs4 import BeautifulSoup, Tag
 from .errors_modals import *
+import logging
 
+logger = logging.getLogger(__name__)
 
 # 描述一个连接到网络上的设备。
 class Device:
@@ -102,13 +104,10 @@ class SuccessPage:
 
 class UnionAuth:  # 代表一个统一认证页面。
     def __init__(self, soup: BeautifulSoup):
-        if soup.find("title").text == "智慧东大--统一身份认证":
-            form: Tag = soup.find("form", {'id': 'loginForm'})
-            self.form_destination = form.attrs['action']
-            self.form_lt_string = form.find("input", {'id': 'lt'}).attrs["value"]
-            self.form_execution = form.find("input", {'name': 'execution'}).attrs["value"]
-        else:
-            self.locked = True
+        form: Tag = soup.find("form", {'id': 'loginForm'})
+        self.form_destination = form.attrs['action']
+        self.form_lt_string = form.find("input", {'id': 'lt'}).attrs["value"]
+        self.form_execution = form.find("input", {'name': 'execution'}).attrs["value"]
 
     @staticmethod
     def get_fail_count(test_ua_page: BeautifulSoup):
@@ -130,16 +129,17 @@ class UnionAuth:  # 代表一个统一认证页面。
         login_result = session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data)
         login_result_soup = BeautifulSoup(login_result.text, "lxml")
         response_page_title = login_result_soup.find("title").text
-        if response_page_title == "系统提示":
+        if response_page_title == PageTitle.SystemHint:
             raise AttemptReachLimitError
-        elif response_page_title == "智慧东大--统一身份认证":
+        elif response_page_title == PageTitle.UnionAuth:
             remain_attempts = UnionAuth.get_fail_count(login_result_soup)
             raise UnionAuthError(remain_attempts)
-        elif response_page_title == "智慧东大":
+        elif response_page_title == PageTitle.EmailVerification:
             # 这个页面可能会出现，因为目标未绑定邮箱。我们这里的处理方法就是简单跳过。
+            logging.warning("帐号未绑定邮箱")
             login_result_soup = BeautifulSoup(session.get('https://ipgw.neu.edu.cn/srun_cas.php?ac_id=1').text, "lxml")
             return SuccessPage(login_result_soup)
-        elif response_page_title == "IP控制网关":
+        elif response_page_title == PageTitle.SuccessPage:
             # 登录成功！
             return SuccessPage(login_result_soup)
         else:
