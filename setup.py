@@ -34,6 +34,7 @@ setup(
     ],
     description="ipgw manager for NEU network gateway",
     long_description=open("README.md", encoding='utf8').read(),
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     entry_points={
         "console_scripts": "ipgw = ipgw.cli.ipgw:main"
