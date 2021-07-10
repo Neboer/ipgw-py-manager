@@ -39,7 +39,7 @@ setup(
         "console_scripts": "ipgw = ipgw.cli.ipgw:main"
     },
     cmdclass={'install': PostInstallCommand},
-    package_data={"": ["default_config.json"]},
+    # package_data={"": ["default_config.json"]},
     include_package_data=True,
     install_requires=['tabulate', 'requests', 'beautifulsoup4', 'wcwidth', 'lxml'],
 )

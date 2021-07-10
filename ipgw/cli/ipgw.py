@@ -15,12 +15,17 @@ def main():
     # 程序第0步：如果需要设置默认登录用户，那么就设置。
     if args.action == 'default':
         set_default_username(args.username)
+        logging.info('设置成功。')
         exit(0)
-
+    target_user, target_sid, kick_action = None, None, None
     # 程序第一步：根据命令行生成需要使用的用户名和密码，查明用户想要的下线模式等。
     try:
         target_user, target_sid, kick_action = get_settings()
     except NoDefaultUserError:
+        # 检测用户列表是否为空，如果为空，则敦促用户添加并设置默认用户。
+        if len(config['users']) == 0:
+            logging.error("请添加并设置默认用户 ipgw add -u 20180001 && ipgw default -u 20180001")
+            exit(-5)
         logging.error("没有默认用户！请添加或者设置一个默认用户。")
         exit(-6)
 
@@ -28,11 +33,6 @@ def main():
         add_user(target_user)
         logging.info("添加成功")
         exit(0)
-
-    # 检测用户列表是否为空，如果为空，则敦促用户添加并设置默认用户。
-    if len(config['users']) == 0:
-        logging.error("请添加并设置默认用户 ipgw add -u 20180001 && ipgw default -u 20180001")
-        exit(-5)
 
     # 接下来，需要处理网络登录登出问题了。
     main_ipgw = IPGW()
@@ -101,6 +101,6 @@ def main():
             logging.info("已经全部下线")
         exit(0)
 
-#
-# if __name__ == '__main__':
-#     main()
+
+if __name__ == '__main__':
+    main()

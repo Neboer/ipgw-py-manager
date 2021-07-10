@@ -16,37 +16,51 @@
 
 本项目承诺长期更新，尽量做到功能稳定。目前已经有一个cli版本供使用，TUI和GUI版本正在开发中。
 
-## 安装与部署
+## 安装
 
-手动安装ipgw-py-manager的方法有些复杂，因为是python脚本。ipgw-py-manager计划在下一个版本发布到pip软件源中，这样安装就会变得非常简单了。
+由于有安装脚本的存在，整个安装过程非常简单。
 
-### 1. 安装Python
+首先克隆本仓库的源代码
 
-首先，为了运行本程序，你需要一个Python环境。如果你已经有Python环境了，那么Python版本不能低于3.7。程序在设计的时候没有考虑低版本兼容性， 因此请使用尽量高的Python版本运行本程序，确保不会出现问题。
+`git clone https://github.com/Neboer/ipgw-py-manager.git`
 
-### 2. 安装依赖
+然后执行`python setup.py install`
 
-其次，你需要安装requirements.txt中的所有包，执行`pip install -r requirements.txt`。
+这样，就可以直接在命令行中执行`ipgw --help`来确认安装了。
 
-然后，你需要安装`lxml`。lxml用来辅助`beautifulsoup`做HTML文档解析，速度比较快。lxml在Windows上安装只需要执行如下命令：
-`pip install lxml`即可，当然需要在管理员权限下执行。如果你的操作系统是Linux发行版，那么请参照 [lxml官网](https://lxml.de/installation.html) 上的内容进行安装。
+## 快速上手
 
-### 3. 添加配置文件
+配置文件在安装之后自动存放在用户的home目录，可以在--help输出的信息中查看。详细的命令行用法参见下面的信息。
 
-在项目的根目录下，有一个配置文件default_config.json。编辑这个文件的username和password为你自己账号的用户名和密码，同时你也可以多添加几个已知帐号的用户。
-然后把这个文件拷贝到`C:\Users\<你的用户名>\ipgw.json`。注意文件名要改动一下。
+对于首次安装的用户，你需要添加一个用户并设置其为默认用户，操作方法如下：
 
-这个过程也可以通过执行`install_config.py`快速执行。
+```shell
+ipgw add -u 20180001
+```
 
-### 4. 添加环境变量
+输入密码，成功添加用户。
 
-现在，`bin/ipgw.ps1`可以执行了。为了更方便的执行代码，你可以把bin文件夹添加进PATH环境变量中。
+```shell
+ipgw default -u 20180001
+```
 
-### 5. 完成！
+成功设置用户为默认用户。
 
-恭喜，ipgw程序已经成功安装进你的电脑，现在你要做的就是重新打开一个命令行窗口，然后执行`ipgw --help`，看到输出的帮助信息，便成功了。
+之后，登录网关：
 
-本程序目前只支持命令行使用
+```shell
+ipgw i
+```
+
+如果用户名和密码没有问题，此时应该显示登录成功，并报告登录的结果、设备列表。
+
+登出：
+
+```shell
+ipgw o -l
+```
+
+快速登出当前登录的帐号。
 
 ## 命令行参数说明
 
@@ -89,42 +103,50 @@ ipgw login -u 20200001 -p thepassword
 ipgw logout
 ipgw o
 ```
+
 登录默认账号，并下线其登陆的所有设备。
 
 ---
+
 ```shell
 ipgw logout --sid 91260000
 ipgw logout -i 91260000
 ```
+
 下线指定sid的设备
 
 ---
+
 ```shell
 ipgw logout -u 20200001 --sid 91260000
 ipgw logout -u 20200001 -p thepassword -i 91260000
 ```
+
 登录指定账号，下线指定sid的设备。当然，你也可以手动指定密码。
 
 ---
+
 ```shell
 ipgw logout -u 20200001 -p thepassword
 ipgw o -u 20200001 --only
 ipgw o -u 20200001 --self
 ```
 
-当不指定--sid的时候，程序会下线此账号登录的所有设备。
-如果加--only选项，则只会留下自己登录；
-如果加--self选项，则只会下线刚刚登录的自己（登录了个寂寞）
+当不指定--sid的时候，程序会下线此账号登录的所有设备。 如果加--only选项，则只会留下自己登录； 如果加--self选项，则只会下线刚刚登录的自己（登录了个寂寞）
 
 ---
+
 ```shell
 ipgw logout --last
 ipgw o -l
 ```
+
 当指定--last登出帐号时，程序会自动尝试登出上次登录而未登出的uid，使用上次登录这个uid时所用的帐号。
 
 注意，所有指定sid的登出请求都会先进行一次不登录下线的尝试，如果尝试失败，则会识别用户提供的帐号进行登录。
+
 ### 账号管理
+
 ```shell
 ipgw add 20200001 -p thepassword
 ```
@@ -134,6 +156,7 @@ ipgw add 20200001 -p thepassword
 程序**不提供**删除账号、修改密码等对已保存账号进行操作的功能，有类似需求的时候请直接编辑配置文件。
 
 ### 全局设置
+
 ```shell
 ipgw login -u 20200001 --silent
 ipgw login -u 20200001 -s
@@ -142,6 +165,7 @@ ipgw login -u 20200001 -s
 `--silent`可以应用在任何场合，它阻止程序输出内容。使用silent选项之后，程序在成功登录网关之后不会打印任何信息。但是程序会在出错的时候打印错误信息。
 
 ---
+
 ```shell
 ipgw login -u 20200001 --kick relogin
 ipgw login -u 20200001 -k relogin
@@ -151,6 +175,7 @@ ipgw login -u 20200001 -k relogin
 kick可以设为三种值：exit、logout和relogin。当请求遇到“此ip地址已经有人在线”时，exit会直接退出程序；logout则会将此人下线然后退出程序； relogin则是先将此人下线，然后再重新登录。
 
 ---
+
 ```shell
 ipgw default -u 20200001
 ```

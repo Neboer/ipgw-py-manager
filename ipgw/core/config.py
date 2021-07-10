@@ -59,12 +59,15 @@ def query_default_user() -> User:
 
 
 def set_default_username(username: str) -> None:
+    find = False
     for user in config["users"]:
         if user["username"] == username:
             user["is_default"] = True
+            find = True
         else:
             user["is_default"] = False
-
+    if not find:
+        raise UsernameNotInConfigFileError
     update_config_file()
 
 
