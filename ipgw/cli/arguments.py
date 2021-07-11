@@ -11,7 +11,7 @@ parser.add_argument('--self', action='store_true', help='登录帐号之后，�
 parser.add_argument('--silent', action='store_true', help='不打印登录成功之后的帐号信息')
 parser.add_argument('--kick', '-k', default=None, choices=['relogin', 'exit', 'logout'], help='当已经有用户在线时采取的操作')
 parser.add_argument('--last', '-l', action='store_true', help='使用最后一次登录的信息操作ipgw网关')
-parser.add_argument('--version', '-v', action='version', version='NEU-ipgw-manager version 2.0 preview')
+parser.add_argument('--version', '-v', action='version', version='NEU-ipgw-manager version 2.0.1 preview')
 
 args = parser.parse_args()
 if args.action == 'i':

@@ -19,18 +19,22 @@ class PostInstallCommand(install):
 
 setup(
     name="NEU-ipgw-manager",
-    version="2.0",
+    version="2.0.1",
     author="Neboer",
     author_email="rubinposter@gmail.com",
     url="https://github.com/Neboer/ipgw-py-manager",
     license="MIT",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
+        "Intended Audience :: End Users/Desktop",
         "Operating System :: OS Independent",
+        "Environment :: Console",
+        "Natural Language :: Chinese (Simplified)",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9"
+        "Programming Language :: Python :: 3.9",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Utilities"
     ],
     description="ipgw manager for NEU network gateway",
     long_description=open("README.md", encoding='utf8').read(),
@@ -39,8 +43,9 @@ setup(
     entry_points={
         "console_scripts": "ipgw = ipgw.cli.ipgw:main"
     },
+    keywords=["NEU", "东北大学", "ipgw", "网关"],
     cmdclass={'install': PostInstallCommand},
-    # package_data={"": ["default_config.json"]},
+    python_requires=">=3.6",
     include_package_data=True,
     install_requires=['tabulate', 'requests', 'beautifulsoup4', 'wcwidth', 'lxml'],
 )
