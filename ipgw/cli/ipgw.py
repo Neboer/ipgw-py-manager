@@ -1,7 +1,6 @@
 from .arguments import args
 from ..core.errors_modals import *
-from ..core.config import User, config, add_user, query_user_by_username, query_default_user, set_default_username, \
-    update_last_login_info
+from ..core.config import config, add_user, set_default_username, update_last_login_info
 from .get_info import get_settings
 from .print_status import print_ipgw_status
 import logging
@@ -48,11 +47,8 @@ def main():
     while True:
         current_login_result = main_ipgw.login(target_user['username'], target_user['password'])
         if current_login_result == LoginResult.UsernameOrPasswordError:
-            logging.error(f"用户名或密码错误，剩余尝试次数{main_ipgw.last_trial_times}")
+            logging.error(f"用户名或密码错误")
             exit(5)
-        elif current_login_result == LoginResult.AttemptReachLimit:
-            logging.error("尝试次数达到上限")
-            exit(15)
         elif current_login_result == LoginResult.LoginSuccessful:
             logging.info("登录成功")
             # 打印登录状态
@@ -91,14 +87,18 @@ def main():
         exit(0)
     if args.action == 'logout':  # 用户登出，快捷登出没有成功，或者用户想要进行高级登出。
         logout_all_devices = not args.self and not args.only  # 既没有self又没有only，即可快速logout。
-        main_ipgw.advanced_logout(only_keep_self=args.only, only_logout_self=args.self,
-                                  logout_all_devices=logout_all_devices)
-        if args.self:
-            logging.info("自我下线")
-        elif args.only:
-            logging.info("仅保留自己在线")
-        elif logout_all_devices:
-            logging.info("已经全部下线")
+        if target_sid:
+            main_ipgw.logout(target_sid)
+            logging.info("目标设备已下线")
+        else:
+            main_ipgw.advanced_logout(only_keep_self=args.only, only_logout_self=args.self,
+                                      logout_all_devices=logout_all_devices)
+            if args.self:
+                logging.info("自我下线")
+            elif args.only:
+                logging.info("仅保留自己在线")
+            elif logout_all_devices:
+                logging.info("已经全部下线")
         exit(0)
 
 

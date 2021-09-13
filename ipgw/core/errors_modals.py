@@ -5,19 +5,14 @@ ua = '''Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, lik
 target = '''https://pass.neu.edu.cn/tpass/login?service=https%3A%2F%2Fipgw.neu.edu.cn%2Fsrun_cas.php%3Fac_id%3D1'''
 
 
+# 东北大学修改了统一身份认证登录的逻辑，不再限制过多的登录次数限制。
 class UnionAuthError(Exception):
-    def __init__(self, last_trial_times):
-        self.last_trial_times = last_trial_times
+    pass
 
 
 class UnknownPageError(Exception):
     def __init__(self, page):
         self.page = page
-
-
-# 出现“系统提示”，说明尝试次数已经上限
-class AttemptReachLimitError(UnionAuthError):
-    pass
 
 
 # 在尝试登录之后，页面返回智慧东大，但是并没有提示密码错误次数的信息，这种奇怪的错误在这里报告。

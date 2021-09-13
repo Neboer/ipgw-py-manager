@@ -2,9 +2,10 @@
 from ..core.config import User, config, query_default_user, query_user_by_username, query_last_user
 from .arguments import args
 from getpass import getpass
+from typing import Tuple
 
 
-def get_settings() -> tuple[User, str, str]:  # 分别是：目标用户、sid、kick三个值。
+def get_settings():  # type: ()->Tuple[User, str, str] # 分别是：目标用户、sid、kick三个值。
     target_user: User = {}
     target_sid: str = args.sid if args.sid else None  # 如果用户指定了sid，那么这就是目标。如果用户没有指定，但是指定了last，那配置文件里记载的sid就是目标。
     kick_action = args.kick if args.kick else config["default_kick"]

@@ -19,7 +19,7 @@ class PostInstallCommand(install):
 
 setup(
     name="NEU-ipgw-manager",
-    version="2.0.1",
+    version="2.0.2",
     author="Neboer",
     author_email="rubinposter@gmail.com",
     url="https://github.com/Neboer/ipgw-py-manager",
@@ -45,7 +45,7 @@ setup(
     },
     keywords=["NEU", "东北大学", "ipgw", "网关"],
     cmdclass={'install': PostInstallCommand},
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     include_package_data=True,
     install_requires=['tabulate', 'requests', 'beautifulsoup4', 'wcwidth', 'lxml'],
 )

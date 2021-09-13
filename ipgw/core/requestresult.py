@@ -109,14 +109,6 @@ class UnionAuth:  # 代表一个统一认证页面。
         self.form_lt_string = form.find("input", {'id': 'lt'}).attrs["value"]
         self.form_execution = form.find("input", {'name': 'execution'}).attrs["value"]
 
-    @staticmethod
-    def get_fail_count(test_ua_page: BeautifulSoup):
-        fail_info: Tag = test_ua_page.find("span", {"id": "errormsghide"})
-        if fail_info:
-            return int(fail_info.text[-1])
-        else:
-            raise IntimateUnionAuthPageError(test_ua_page)
-
     def login(self, username, password, session: requests.Session):
         form_data = {
             'rsa': username + password + self.form_lt_string,
@@ -129,11 +121,8 @@ class UnionAuth:  # 代表一个统一认证页面。
         login_result = session.post("https://pass.neu.edu.cn" + self.form_destination, data=form_data)
         login_result_soup = BeautifulSoup(login_result.text, "lxml")
         response_page_title = login_result_soup.find("title").text
-        if response_page_title == PageTitle.SystemHint:
-            raise AttemptReachLimitError
-        elif response_page_title == PageTitle.UnionAuth:
-            remain_attempts = UnionAuth.get_fail_count(login_result_soup)
-            raise UnionAuthError(remain_attempts)
+        if response_page_title == PageTitle.UnionAuth:
+            raise UnionAuthError()
         elif response_page_title == PageTitle.EmailVerification:
             # 这个页面可能会出现，因为目标未绑定邮箱。我们这里的处理方法就是简单跳过。
             logging.warning("帐号未绑定邮箱")

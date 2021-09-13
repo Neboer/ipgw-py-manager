@@ -21,10 +21,11 @@ def print_ipgw_status(success_page: SuccessPage):
         ['已用流量', _sizeof_fmt(base_info['consume_bytes'])],
         ['在线时长', str(timedelta(seconds=base_info['online_time_sec']))]
     ]
-    devices_table_header = ['当前', 'IP地址', '登录时间', '在线时长', '已用流量']
+    devices_table_header = ['当前', 'sid', 'IP地址', '登录时间', '在线时长', '已用流量']
     devices_table = [
         [
             '*' if cd.is_current else ' ',
+            cd.sid,
             cd.ip,
             cd.login_date,
             cd.duration,

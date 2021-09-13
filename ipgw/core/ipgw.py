@@ -13,7 +13,6 @@ class IPGW:
         self.sess.headers.update({'User-Agent': ua})
         self.union_auth_page: UnionAuth = None
 
-        self.last_trial_times = -1
         self.success_page: SuccessPage = None
 
     def login(self, username, password):
@@ -25,11 +24,7 @@ class IPGW:
                 self.success_page = self.union_auth_page.login(username, password, self.sess)
             except UnionAuthError as e:
                 if type(e) is UnionAuthError:
-                    self.last_trial_times = e.last_trial_times
                     return LoginResult.UsernameOrPasswordError
-                elif type(e) is AttemptReachLimitError:
-                    self.last_trial_times = -1
-                    return LoginResult.AttemptReachLimit
                 else:
                     raise UnknownPageError(page_soup)
             # 没有异常
