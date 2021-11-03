@@ -5,6 +5,7 @@ from random import choice
 from string import digits
 from typing import TypedDict, Union
 from json import loads
+from urllib.parse import parse_qs, urlparse
 
 
 class IPGWOnlineInfo(TypedDict):
@@ -65,21 +66,27 @@ def _jq_cbid():
     return f'jQuery1124{random_str}_{_timestamp()}'
 
 
+# ipgw登录涉及到一个很神秘的参数，acid。这个acid与使用的网络有关。
+def get_ipgw_session_acid(session: Session):
+    result = session.get("http://ipgw.neu.edu.cn")  # 跟随重定向抵达终点
+    return parse_qs(urlparse(result.url).query)['ac_id'][0]
+
+
 # sso_token:ST-2166499-vqj94U9Dfyliw06sqLLH-tpass
-def login_from_sso(session: Session, sso_token):
-    return session.get(f"http://ipgw.neu.edu.cn/v1/srun_portal_sso?ac_id=1&ticket={sso_token}",
-                       headers={"referer": f"http://ipgw.neu.edu.cn/srun_portal_sso?ac_id=1&ticket={sso_token}"}).json()
+def login_from_sso(session: Session, sso_token, ac_id):
+    return session.get(f"http://ipgw.neu.edu.cn/v1/srun_portal_sso?ac_id={ac_id}&ticket={sso_token}",
+                       headers={"referer": f"http://ipgw.neu.edu.cn/srun_portal_sso?ac_id={ac_id}&ticket={sso_token}"}).json()
 
 
 def get_info(session: Session) -> Union[IPGWOnlineInfo, IPGWNotOnlineInfo]:
     reply = session.get(
-        f"http://ipgw.neu.edu.cn/cgi-bin/rad_user_info?callback=&callback={_jq_cbid()}_{_timestamp()}_={_timestamp()}")
+        f"http://ipgw.neu.edu.cn/cgi-bin/rad_user_info?callback={_jq_cbid()}_{_timestamp()}&_={_timestamp()}")
     return _unwrap_javascript_json(reply.text)
 
 
-def logout(session: Session, username, ip):
+def logout(session: Session, username, ip, ac_id):
     reply = session.get(
-        f"http://ipgw.neu.edu.cn/cgi-bin/srun_portal?callback={_jq_cbid()}_{_timestamp()}&action=logout&username={username}&ip={ip}&ac_id=1&_={_timestamp()}"
+        f"http://ipgw.neu.edu.cn/cgi-bin/srun_portal?callback={_jq_cbid()}_{_timestamp()}&action=logout&username={username}&ip={ip}&ac_id={ac_id}&_={_timestamp()}"
     )
     return _unwrap_javascript_json(reply.text)
 

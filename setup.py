@@ -19,7 +19,7 @@ class PostInstallCommand(install):
 
 setup(
     name="NEU-ipgw-manager",
-    version="3.0-preview",
+    version="3.0",
     author="Neboer",
     author_email="rubinposter@gmail.com",
     url="https://github.com/Neboer/ipgw-py-manager",

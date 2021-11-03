@@ -28,7 +28,7 @@ def main():
             else:
                 logging.error("没有默认用户！请添加或者设置一个默认用户。")
                 return -6
-        finally:
+        else:
             if args.action == 'add':
                 add_user(target_user)
                 logging.info("添加成功")

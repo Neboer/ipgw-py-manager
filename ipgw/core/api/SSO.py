@@ -35,7 +35,7 @@ def SSO_prepare(session: Session) -> SSOPage:
 
 
 # 请求SSO和认证SSO两个操作合并到一个API接口中，直接操作。返回一个SSO ticket。这个函数会触发异常
-def SSO_login(session: Session, page: SSOPage, username, password) -> str:
+def SSO_login(session: Session, page: SSOPage, username, password, ac_id) -> str:
     form_data = {
         'rsa': username + password + page['form_lt_string'],
         'ul': len(username),
@@ -44,8 +44,7 @@ def SSO_login(session: Session, page: SSOPage, username, password) -> str:
         'execution': page['form_execution'],
         '_eventId': 'submit'
     }
-    login_first_result = session.post("https://pass.neu.edu.cn" + page['form_destination'], data=form_data,
-                                      allow_redirects=True)  # 允许跳转
+    login_first_result = session.post("https://pass.neu.edu.cn" + page['form_destination'], data=form_data, allow_redirects=True)  # 允许跳转
     login_first_result_soup = BeautifulSoup(login_first_result.text, "lxml")
     title_soup = login_first_result_soup.find("title")
     if not title_soup:
@@ -63,7 +62,7 @@ def SSO_login(session: Session, page: SSOPage, username, password) -> str:
             # 这个页面可能会出现，因为目标未绑定邮箱。我们这里的处理方法就是简单跳过。
             logging.warning("帐号未绑定邮箱")
             login_skip_email_result = session.get(
-                "https://pass.neu.edu.cn/tpass/login?service=http%3A%2F%2Fipgw.neu.edu.cn%2Fsrun_portal_sso%3Fac_id%3D1", allow_redirects=True)
+                f"https://pass.neu.edu.cn/tpass/login?service=http%3A%2F%2Fipgw.neu.edu.cn%2Fsrun_portal_sso%3Fac_id%3D{ac_id}", allow_redirects=True)
             return parse_qs(urlparse(login_skip_email_result.url).query)['ticket'][0]
         else:
             raise UnknownPageError(login_first_result_soup)

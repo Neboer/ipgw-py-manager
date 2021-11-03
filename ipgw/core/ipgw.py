@@ -3,7 +3,7 @@ from .api.SSO_error import UnionAuthError
 from .errors_modals import LoginResult
 from .prepare_session import prepare_session
 from .api.SSO import SSO_prepare, SSO_login
-from .api.portal import login_from_sso, get_info, logout, batch_logout
+from .api.portal import login_from_sso, get_info, logout, batch_logout, get_ipgw_session_acid
 from .api.portal_error import IPAlreadyOnlineError, OtherException, IPNotOnlineError
 
 
@@ -14,13 +14,14 @@ class IPGW:
         self.sess = prepare_session()
         self.union_auth_page = SSO_prepare(self.sess)
         self.status = None
+        self.acid = get_ipgw_session_acid(self.sess)
 
     def login(self, username, password):
         try:
-            token = SSO_login(self.sess, self.union_auth_page, username, password)
+            token = SSO_login(self.sess, self.union_auth_page, username, password, self.acid)
         except UnionAuthError as e:
             return LoginResult.UsernameOrPasswordError
-        result = login_from_sso(self.sess, token)
+        result = login_from_sso(self.sess, token, self.acid)
         if result['code'] == 0:
             # 至此，登录已经顺利完成。
             return LoginResult.LoginSuccessful
@@ -37,7 +38,7 @@ class IPGW:
         return result
 
     def advanced_logout(self, username, ip_addr):
-        result = logout(self.sess, username, ip_addr)
+        result = logout(self.sess, username, ip_addr, self.acid)
         if result['ecode'] == 0:
             pass
         elif result['error_msg'] == "You are not online.":
