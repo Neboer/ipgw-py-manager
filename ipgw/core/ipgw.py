@@ -1,67 +1,55 @@
 # main ipgw progress
-from requests import Session
-from .requestresult import UnionAuth, SuccessPage, Device
-from bs4 import BeautifulSoup
-from .errors_modals import *
+from .api.SSO_error import UnionAuthError
+from .errors_modals import LoginResult
+from .prepare_session import prepare_session
+from .api.SSO import SSO_prepare, SSO_login
+from .api.portal import login_from_sso, get_info, logout, batch_logout
+from .api.portal_error import IPAlreadyOnlineError, OtherException, IPNotOnlineError
 
 
 # 描述一个ipgw统一身份认证的全过程。
 class IPGW:
     # 初始化，获得一个ipgw的统一身份认证界面
     def __init__(self):
-        self.sess = Session()
-        self.sess.headers.update({'User-Agent': ua})
-        self.union_auth_page: UnionAuth = None
-
-        self.success_page: SuccessPage = None
+        self.sess = prepare_session()
+        self.union_auth_page = SSO_prepare(self.sess)
+        self.status = None
 
     def login(self, username, password):
-        page_soup = BeautifulSoup(self.sess.get(target).text, 'lxml')
-        title = page_soup.find("title").text
-        if title == PageTitle.UnionAuth:
-            self.union_auth_page = UnionAuth(page_soup)
-            try:
-                self.success_page = self.union_auth_page.login(username, password, self.sess)
-            except UnionAuthError as e:
-                if type(e) is UnionAuthError:
-                    return LoginResult.UsernameOrPasswordError
-                else:
-                    raise UnknownPageError(page_soup)
-            # 没有异常
+        try:
+            token = SSO_login(self.sess, self.union_auth_page, username, password)
+        except UnionAuthError as e:
+            return LoginResult.UsernameOrPasswordError
+        result = login_from_sso(self.sess, token)
+        if result['code'] == 0:
+            # 至此，登录已经顺利完成。
             return LoginResult.LoginSuccessful
-        elif title == PageTitle.SuccessPage:
-            # 直接登录成功了。因为登录时带有cookie
-            self.success_page = SuccessPage(page_soup)
-            return LoginResult.LoginSuccessful
+        elif result['code'] == 1:
+            # 用户已经在线了！
+            return LoginResult.UserAlreadyOnlineError
         else:
-            raise UnknownPageError(page_soup)
+            # 未知报错，暂且报错。
+            raise OtherException(result)
 
-    def logout(self, sid: str):
-        Device.logout_sid(sid, self.sess)
+    def get_status(self):
+        result = get_info(self.sess)
+        self.status = result
+        return result
 
-    def get_ipgw_status(self) -> PageStatus:
-        sp = self.success_page
-        if sp.status == PageStatus.Normal:
-            # 如果一切正常，则继续获取流量等信息
-            sp.get_detailed_traffic_and_online_seconds(self.sess)
-        return sp.status
-
-    def get_current_device(self) -> Device:
-        # 找到当前设备
-        current_device = next((x for x in self.success_page.device_list if x.is_current), None)
-        if not current_device:
-            raise NoCurrentDeviceError
+    def advanced_logout(self, username, ip_addr):
+        result = logout(self.sess, username, ip_addr)
+        if result['ecode'] == 0:
+            pass
+        elif result['error_msg'] == "You are not online.":
+            raise IPNotOnlineError()
         else:
-            return current_device
+            raise OtherException(result)
 
-    def logout_online_others(self):
-        Device.logout_sid(self.success_page.online_other_uid, self.sess)
-
-    def advanced_logout(self, logout_all_devices=False, only_keep_self=False, only_logout_self=False):
-        logout_self = logout_all_devices or only_logout_self
-        logout_others = logout_all_devices or only_keep_self
-        for device in self.success_page.device_list:
-            if device.is_current and logout_self:
-                device.logout(self.sess)
-            if not device.is_current and logout_others:
-                device.logout(self.sess)
+    def batch_logout(self):
+        result = batch_logout(self.sess)
+        if result['code'] == 1:
+            raise IPNotOnlineError()
+        elif result['code'] == 0:
+            pass
+        else:
+            raise OtherException(result)

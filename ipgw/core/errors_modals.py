@@ -2,12 +2,23 @@ from enum import Enum
 from typing import TypedDict
 
 ua = '''Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36'''
-target = '''https://pass.neu.edu.cn/tpass/login?service=https%3A%2F%2Fipgw.neu.edu.cn%2Fsrun_cas.php%3Fac_id%3D1'''
-
+# target = '''https://pass.neu.edu.cn/tpass/login?service=https%3A%2F%2Fipgw.neu.edu.cn%2Fsrun_cas.php%3Fac_id%3D1'''
+target = '''https://pass.neu.edu.cn/tpass/login?service=http%3A%2F%2Fipgw.neu.edu.cn%2Fsrun_portal_sso%3Fac_id%3D1'''
 
 # 东北大学修改了统一身份认证登录的逻辑，不再限制过多的登录次数限制。
 class UnionAuthError(Exception):
     pass
+
+
+# 抱歉！您的请求出现了异常，请稍后再试。
+class SystemHintError(Exception):
+    pass
+
+
+# 明确且已知的后端错误，比如 Uncaught exception 'RedisException' with message 'read error on connection'之类的东西
+class BackendError(Exception):
+    def __init__(self, page):
+        self.page = page
 
 
 class UnknownPageError(Exception):
@@ -62,6 +73,7 @@ class LoginResult(Enum):
     LoginSuccessful = 0
     UsernameOrPasswordError = 1
     AttemptReachLimit = 2
+    UserAlreadyOnlineError = 3
 
 
 # SuccessPage的两个依赖

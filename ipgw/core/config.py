@@ -18,11 +18,8 @@ class User(TypedDict, total=False):
 
 class Config(TypedDict):
     users: List[User]
-    ua: str
-    default_kick: str  # 默认当“已经有人在此ip了”的行为，默认是“relogin”
-
     last_login_username: str  # 上次登录的用户名
-    last_sid: str  # 上次登录的设备编号。
+    last_ip_addr: str
 
 
 base_dir = Path.home() if not getenv('IPGW_CONFIG_FILE') else Path(getenv('IPGW_CONFIG_FILE'))
@@ -71,11 +68,11 @@ def set_default_username(username: str) -> None:
     update_config_file()
 
 
-def update_last_login_info(username="", sid=""):
+def update_last_login_info(username="", ip_addr=""):
     if username:
         config['last_login_username'] = username
-    if sid:
-        config['last_sid'] = sid
+    if ip_addr:
+        config['last_ip_addr'] = ip_addr
     update_config_file()
 
 
