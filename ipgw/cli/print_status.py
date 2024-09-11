@@ -20,15 +20,17 @@ def print_ipgw_status(info: Union[IPGWOnlineInfo, IPGWNotOnlineInfo]):
         total_bytes = info['remain_bytes'] + info['sum_bytes']
         sum_bytes = info['sum_bytes']
         try:
-            percentage = f"{(sum_bytes*100 / total_bytes):.3}%"
+            percentage = f"{(sum_bytes*100 / total_bytes):.3f}%"
         except ZeroDivisionError:
             percentage = "N/A%"
         info_table = [
             ['登录帐号', info['user_name']],
             ['IP地址', info['online_ip']],
-            ['套餐名称', info['billing_name']],
+            ['计费区间', info['billing_name']],
+            ['账户余额', f"{info['user_balance']:.4f}元"],
+            ['本月已扣', f"{info['user_charge']:.4f}元"],
             ['本次流量', f"下行{_sizeof_fmt(info['bytes_in'])} 上行{_sizeof_fmt(info['bytes_out'])}"],
-            ['总流量使用', f"{_sizeof_fmt(sum_bytes)} / {_sizeof_fmt(total_bytes)} 已用{percentage}"],
+            ['本月流量', f"{_sizeof_fmt(sum_bytes)} / {_sizeof_fmt(total_bytes)} 已用{percentage}"],
             ['在线时长', str(timedelta(seconds=info['sum_seconds']))]
         ]
         print(tabulate(info_table, tablefmt='simple'))

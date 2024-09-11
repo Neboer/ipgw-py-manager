@@ -1,4 +1,5 @@
 # main ipgw progress
+import logging
 from .api.SSO_error import UnionAuthError
 from .errors_modals import LoginResult
 from .prepare_session import prepare_session
@@ -22,14 +23,18 @@ class IPGW:
         except UnionAuthError as e:
             return LoginResult.UsernameOrPasswordError
         result = login_from_sso(self.sess, token, self.acid)
-        if result['code'] == 0:
+        # code message: 
+        # 0 "success" 登录成功
+        # 1 "E2616: Arrearage users." 用户已欠费
+        if result['code'] == 0 and result['message'] == 'success':
             # 至此，登录已经顺利完成。
             return LoginResult.LoginSuccessful
-        elif result['code'] == 1:
-            # 用户已经在线了！
-            return LoginResult.UserAlreadyOnlineError
+        elif result['code'] == 1 and result['message'] == 'E2616: Arrearage users.':
+            # 用户已欠费！
+            return LoginResult.ArrearageUserError
         else:
-            # 未知报错，暂且报错。
+            # 程序无法解析此错误，说明程序出错。
+            logging.error(f"IPGW.login 登录时遇到未知错误：{result['code']}, {result['message']}")
             raise OtherException(result)
 
     def get_status(self):
@@ -41,7 +46,7 @@ class IPGW:
         result = logout(self.sess, username, ip_addr, self.acid)
         if result['ecode'] == 0:
             pass
-        elif result['error_msg'] == "You are not online.":
+        elif result['error_msg'] == "你没有在线。":
             raise IPNotOnlineError()
         else:
             raise OtherException(result)

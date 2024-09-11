@@ -64,6 +64,8 @@ def main():
                             print_ipgw_status(current_ipgw_status)
                             # 将用户信息写入配置文件。
                             update_last_login_info(current_ipgw_status['user_name'], current_ipgw_status['online_ip'])
+                        elif current_login_result == LoginResult.ArrearageUserError:
+                            logging.error("用户已欠费")
                         elif current_login_result == LoginResult.UserAlreadyOnlineError:
                             logging.error("用户已经在线了")
 
