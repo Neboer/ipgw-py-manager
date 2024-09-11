@@ -47,5 +47,5 @@ setup(
     cmdclass={'install': PostInstallCommand},
     python_requires=">=3.7",
     include_package_data=True,
-    install_requires=['tabulate', 'requests', 'beautifulsoup4', 'wcwidth', 'lxml'],
+    install_requires=['tabulate', 'requests', 'beautifulsoup4', 'wcwidth'],
 )

@@ -25,7 +25,7 @@ class SSOPage(TypedDict):
 
 # 准备一个SSO内容，里面有
 def SSO_prepare(session: Session) -> SSOPage:
-    page_soup = BeautifulSoup(session.get(target).text, 'lxml')
+    page_soup = BeautifulSoup(session.get(target).text, "html.parser")
     form: Tag = page_soup.find("form", {'id': 'loginForm'})
     return {
         "form_lt_string": form.find("input", {'id': 'lt'}).attrs["value"],
@@ -45,7 +45,7 @@ def SSO_login(session: Session, page: SSOPage, username, password, ac_id) -> str
         '_eventId': 'submit'
     }
     login_first_result = session.post("https://pass.neu.edu.cn" + page['form_destination'], data=form_data, allow_redirects=True)  # 允许跳转
-    login_first_result_soup = BeautifulSoup(login_first_result.text, "lxml")
+    login_first_result_soup = BeautifulSoup(login_first_result.text, "html.parser")
     title_soup = login_first_result_soup.find("title")
     if not title_soup:
         # 问题出现！ 这个问题可能是后端返回了一个redis错误的页面
