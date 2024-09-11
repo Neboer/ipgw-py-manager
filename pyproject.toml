@@ -1,6 +1,47 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "NEU-ipgw-manager"
+authors = [
+    { name = "Neboer", email = "rubinposter@gmail.com" },
+]
+description = "ipgw manager for NEU network gateway"
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["NEU", "东北大学", "ipgw", "网关", "northeastern university"]
+license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Natural Language :: Chinese (Simplified)",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Utilities",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "requests",
+    'tabulate',
+    'beautifulsoup4',
+    'wcwidth'
+]
+dynamic = ["version"]
+
+[project.scripts]
+ipgw = "ipgw.cli.ipgw:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "ipgw.__version__"}

@@ -17,7 +17,6 @@ def main():
         logging.info('设置成功。')
     else:
         # 查明用户
-        target_user = None
         try:
             target_user = get_settings()
         except NoDefaultUserError:

@@ -1,8 +1,10 @@
 import logging
-from urllib.parse import parse_qs, urlparse
-from requests import Session, codes
-from bs4 import BeautifulSoup, Tag
 from typing import TypedDict
+from urllib.parse import parse_qs, urlparse
+
+from bs4 import BeautifulSoup, Tag
+from requests import Session
+
 from .SSO_error import BackendError, UnionAuthError, UnknownPageError
 
 ua = '''Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36'''
@@ -66,10 +68,3 @@ def SSO_login(session: Session, page: SSOPage, username, password, ac_id) -> str
             return parse_qs(urlparse(login_skip_email_result.url).query)['ticket'][0]
         else:
             raise UnknownPageError(login_first_result_soup)
-
-    # print(ticket)
-    # session.get(login_first_result.next.url)
-    # session.get(f"http://ipgw.neu.edu.cn/srun_portal_sso?ac_id=1&ticket={ticket}")
-    # login_final_result = session.get(f'http://ipgw.neu.edu.cn/v1/srun_portal_sso?ac_id=1&ticket={ticket}', headers={
-    #     "referer": f"http://ipgw.neu.edu.cn/srun_portal_sso?ac_id=1&ticket={ticket}"})
-    # print(login_final_result.text)

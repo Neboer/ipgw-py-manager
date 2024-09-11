@@ -1,7 +1,8 @@
 # 从配置文件和命令行参数中猜测需要使用的用户以及可能被覆盖的设置(比如kick)。
-from ..core.config import User, config, query_default_user, query_user_by_username, query_last_user
-from .arguments import args
 from getpass import getpass
+
+from .arguments import args
+from ..core.config import User, query_default_user, query_user_by_username
 
 
 def get_settings() -> User:

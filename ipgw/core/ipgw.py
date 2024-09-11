@@ -1,11 +1,12 @@
 # main ipgw progress
 import logging
+
+from .api.SSO import SSO_prepare, SSO_login
 from .api.SSO_error import UnionAuthError
+from .api.portal import login_from_sso, get_info, logout, batch_logout, get_ipgw_session_acid
+from .api.portal_error import OtherException, IPNotOnlineError
 from .errors_modals import LoginResult
 from .prepare_session import prepare_session
-from .api.SSO import SSO_prepare, SSO_login
-from .api.portal import login_from_sso, get_info, logout, batch_logout, get_ipgw_session_acid
-from .api.portal_error import IPAlreadyOnlineError, OtherException, IPNotOnlineError
 
 
 # 描述一个ipgw统一身份认证的全过程。
@@ -20,7 +21,7 @@ class IPGW:
     def login(self, username, password):
         try:
             token = SSO_login(self.sess, self.union_auth_page, username, password, self.acid)
-        except UnionAuthError as e:
+        except UnionAuthError:
             return LoginResult.UsernameOrPasswordError
         result = login_from_sso(self.sess, token, self.acid)
         # code message: 
@@ -34,7 +35,7 @@ class IPGW:
             return LoginResult.ArrearageUserError
         else:
             # 程序无法解析此错误，说明程序出错。
-            logging.error(f"IPGW.login 登录时遇到未知错误：{result['code']}, {result['message']}")
+            logging.error(f"登录时遇到未知错误：{result['code']}, {result['message']}")
             raise OtherException(result)
 
     def get_status(self):
