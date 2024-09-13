@@ -17,22 +17,29 @@ class IPGW:
         self.union_auth_page = SSO_prepare(self.sess)
         self.status = None
         self.acid = get_ipgw_session_acid(self.sess)
+        logging.debug(f"get_ipgw_session_acid: {self.acid}")
 
     def login(self, username, password):
         try:
             token = SSO_login(self.sess, self.union_auth_page, username, password, self.acid)
+            logging.debug(f"sso_login get token: {token}")
         except UnionAuthError:
             return LoginResult.UsernameOrPasswordError
         result = login_from_sso(self.sess, token, self.acid)
+        logging.debug(f"sso_login result: {result}")
         # code message: 
         # 0 "success" 登录成功
         # 1 "E2616: Arrearage users." 用户已欠费
+        # 1 "message': 'no_response_data_error"
         if result['code'] == 0 and result['message'] == 'success':
             # 至此，登录已经顺利完成。
             return LoginResult.LoginSuccessful
         elif result['code'] == 1 and result['message'] == 'E2616: Arrearage users.':
             # 用户已欠费！
             return LoginResult.ArrearageUserError
+        elif result['code'] == 1 and result['message'] == 'no_response_data_error':
+            # 用户账号欠费，补交费用后没有重新连接无线网
+            return LoginResult.NoResponseDataError
         else:
             # 程序无法解析此错误，说明程序出错。
             logging.error(f"登录时遇到未知错误：{result['code']}, {result['message']}")
@@ -45,6 +52,7 @@ class IPGW:
 
     def advanced_logout(self, username, ip_addr):
         result = logout(self.sess, username, ip_addr, self.acid)
+        logging.debug(f"logout result: {result}")
         if result['ecode'] == 0:
             pass
         elif result['error_msg'] == "你没有在线。":
@@ -54,6 +62,7 @@ class IPGW:
 
     def batch_logout(self):
         result = batch_logout(self.sess)
+        logging.debug(f"batch_logout result: {result}")
         if result['code'] == 1:
             raise IPNotOnlineError()
         elif result['code'] == 0:

@@ -75,6 +75,7 @@ class LoginResult(Enum):
     AttemptReachLimit = 2
     UserAlreadyOnlineError = 3
     ArrearageUserError = 4 # 用户已欠费
+    NoResponseDataError = 5
 
 
 # SuccessPage的两个依赖

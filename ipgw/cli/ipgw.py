@@ -7,7 +7,7 @@ import logging
 # ipgw的命令行界面。
 from ..core.ipgw import IPGW
 
-logging.basicConfig(format='%(message)s', level=logging.INFO)
+logging.basicConfig(format='%(message)s', level=logging.INFO if not args.verbose else logging.DEBUG)
 
 
 def main():

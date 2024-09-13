@@ -29,11 +29,13 @@ class SSOPage(TypedDict):
 def SSO_prepare(session: Session) -> SSOPage:
     page_soup = BeautifulSoup(session.get(target).text, "html.parser")
     form: Tag = page_soup.find("form", {'id': 'loginForm'})
-    return {
+    sso_form_data = {
         "form_lt_string": form.find("input", {'id': 'lt'}).attrs["value"],
         "form_destination": form.attrs['action'],
         "form_execution": form.find("input", {'name': 'execution'}).attrs["value"]
     }
+    logging.debug(f"sso_form_data: {sso_form_data}")
+    return sso_form_data
 
 
 # 请求SSO和认证SSO两个操作合并到一个API接口中，直接操作。返回一个SSO ticket。这个函数会触发异常
@@ -49,6 +51,7 @@ def SSO_login(session: Session, page: SSOPage, username, password, ac_id) -> str
     login_first_result = session.post("https://pass.neu.edu.cn" + page['form_destination'], data=form_data, allow_redirects=True)  # 允许跳转
     login_first_result_soup = BeautifulSoup(login_first_result.text, "html.parser")
     title_soup = login_first_result_soup.find("title")
+    logging.debug("page_title: " + title_soup.text if title_soup else "<no data>")
     if not title_soup:
         # 问题出现！ 这个问题可能是后端返回了一个redis错误的页面
         raise BackendError(login_first_result_soup.text)
@@ -65,6 +68,7 @@ def SSO_login(session: Session, page: SSOPage, username, password, ac_id) -> str
             logging.warning("帐号未绑定邮箱")
             login_skip_email_result = session.get(
                 f"https://pass.neu.edu.cn/tpass/login?service=http%3A%2F%2Fipgw.neu.edu.cn%2Fsrun_portal_sso%3Fac_id%3D{ac_id}", allow_redirects=True)
+            logging.debug(f"skip_email")
             return parse_qs(urlparse(login_skip_email_result.url).query)['ticket'][0]
         else:
             raise UnknownPageError(login_first_result_soup)

@@ -1,3 +1,4 @@
+import logging
 from math import floor
 from requests import Session
 from time import time
