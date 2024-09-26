@@ -39,9 +39,9 @@ if not config_file_location.exists():
     with open(config_file_location, 'w', encoding='utf8') as config_file:
         json.dump(default_config_dict, config_file)
     logging.info(f"请使用 ipgw add -u xxx 和 ipgw default -u xxx 两个命令来添加新账号并将其设为默认。")
-else:
-    with open(config_file_location, 'r', encoding='utf8') as config_file:
-        config: Config = json.load(config_file)
+
+with open(config_file_location, 'r', encoding='utf8') as config_file:
+    config: Config = json.load(config_file)
 
 
 def update_config_file():
