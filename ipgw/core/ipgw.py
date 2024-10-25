@@ -1,5 +1,6 @@
 # main ipgw progress
 import logging
+from time import sleep
 
 from .api.SSO import SSO_prepare, SSO_login
 from .api.SSO_error import UnionAuthError
@@ -46,7 +47,19 @@ class IPGW:
             raise OtherException(result)
 
     def get_status(self):
-        result = get_info(self.sess)
+        max_retries = 5
+        result = None
+        for i in range(max_retries):
+            result = get_info(self.sess)
+            if len(result['billing_name'].strip()) == 0:
+                # IPGW系统的bug，在长时间不登录系统后突然登录可能会无法获得账号信息。
+                logging.warning("暂时无法获取账号信息，重试中……")
+                sleep(1)
+                continue
+            else:
+                break
+        else:
+            logging.error("错误：暂时无法获取完整账号信息。")
         self.status = result
         return result
 
