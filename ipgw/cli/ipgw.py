@@ -58,7 +58,7 @@ def main():
                             logging.error("用户名或密码错误")
                         elif current_login_result == LoginResult.LoginSuccessful:
                             logging.info("登录成功")
-                            current_ipgw_status = main_ipgw.get_status()
+                            current_ipgw_status = main_ipgw.get_status(must_success=True)
                             # 打印登录状态
                             print_ipgw_status(current_ipgw_status)
                             # 将用户信息写入配置文件。

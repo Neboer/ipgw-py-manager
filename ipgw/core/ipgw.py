@@ -46,12 +46,14 @@ class IPGW:
             logging.error(f"登录时遇到未知错误：{result['code']}, {result['message']}")
             raise OtherException(result)
 
-    def get_status(self):
+    def get_status(self, must_success = False):
         max_retries = 5
         result = None
         for i in range(max_retries):
             result = get_info(self.sess)
-            if len(result['billing_name'].strip()) == 0:
+            if not must_success:
+                break
+            elif len(result['billing_name'].strip()) == 0:
                 # IPGW系统的bug，在长时间不登录系统后突然登录可能会无法获得账号信息。
                 logging.warning("暂时无法获取账号信息，重试中……")
                 sleep(1)
