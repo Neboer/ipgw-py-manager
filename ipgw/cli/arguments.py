@@ -2,8 +2,9 @@ import argparse
 from pathlib import Path
 
 import ipgw
+from ipgw.core.config import get_config_path
 
-parser = argparse.ArgumentParser(description='ipgw-py-manager', epilog=f'配置文件路径：{Path.home().joinpath("ipgw.json")}')
+parser = argparse.ArgumentParser(description='ipgw-py-manager', epilog=f'配置文件路径：{get_config_path()}')
 parser.add_argument('action', type=str, default='login',
                     choices=['login', 'logout', 'add', 'i', 'o', 'default', 'status', 's'])
 parser.add_argument('--username', '-u', type=str, help='学工号，用户名')

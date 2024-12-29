@@ -2,6 +2,7 @@ import json
 import logging
 from pathlib import Path
 from typing import List, Union
+from platformdirs import user_config_dir
 
 from .errors_modals import *
 
@@ -32,10 +33,15 @@ class Config(TypedDict):
     last_ip_addr: str
 
 
-config_file_location = Path.home() / 'ipgw.json'
+def get_config_path() -> Path:
+    return Path(user_config_dir('ipgw', roaming=True)) / 'ipgw.json'
+
+
+config_file_location = get_config_path()
 if not config_file_location.exists():
     # 配置文件不存在，且无冲突，我们创建一个配置文件。
     logging.warning(f"配置文件不存在，自动创建在{config_file_location}。")
+    config_file_location.parent.mkdir(parents=True, exist_ok=True)
     with open(config_file_location, 'w', encoding='utf8') as config_file:
         json.dump(default_config_dict, config_file)
     logging.info(f"请使用 ipgw add -u xxx 和 ipgw default -u xxx 两个命令来添加新账号并将其设为默认。")

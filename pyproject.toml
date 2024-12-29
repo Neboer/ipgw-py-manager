@@ -36,7 +36,8 @@ dependencies = [
     "requests",
     'tabulate',
     'beautifulsoup4',
-    'wcwidth'
+    'wcwidth',
+    'platformdirs'
 ]
 dynamic = ["version"]
 
