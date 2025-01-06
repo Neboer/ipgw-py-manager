@@ -34,7 +34,7 @@ class Config(TypedDict):
 
 
 def get_config_path() -> Path:
-    return Path(user_config_dir('ipgw', roaming=True)) / 'ipgw.json'
+    return Path(user_config_dir('neu-ipgw-manager', 'Neboer', roaming=True)) / 'ipgw.json'
 
 
 config_file_location = get_config_path()
