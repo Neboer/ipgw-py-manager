@@ -23,6 +23,8 @@ def prepare_session(bypass_proxy: bool = False) -> Session:
         "X-Requested-With": "XMLHttpRequest",
         "Connection": "keep-alive"
     })
+
+    # check the bypass_proxy flag to skip the system proxy
     if bypass_proxy:
         sess.trust_env = False #Disable proxy trust
     return sess

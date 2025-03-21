@@ -13,8 +13,9 @@ from .prepare_session import prepare_session
 # 描述一个ipgw统一身份认证的全过程。
 class IPGW:
     # 初始化，获得一个ipgw的统一身份认证界面
+    # add the bypass_proxy parameter and set default value to false
     def __init__(self, bypass_proxy: bool = False):
-        self.sess = prepare_session(bypass_proxy)
+        self.sess = prepare_session(bypass_proxy) # pass the bypass_proxy to the prepare session
         self.union_auth_page = SSO_prepare(self.sess)
         self.status = None
         self.acid = get_ipgw_session_acid(self.sess)
