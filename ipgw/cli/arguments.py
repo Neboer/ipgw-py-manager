@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+import os
 
 import ipgw
 from ipgw.core.config import get_config_path
@@ -12,6 +13,9 @@ parser.add_argument('--password', '-p', type=str, help='在命令行中指定的
 parser.add_argument('--all', '-a', action='store_true', help='下线所有设备')
 parser.add_argument('--version', '-V', action='version', version=f'NEU-ipgw-manager version {ipgw.__version__}', help='显示软件版本信息')
 parser.add_argument('--verbose', '-v', action='store_true', help='详细输出日志')
+parser.add_argument('--use-proxy', action='store_true', help='启用系统代理设置（默认禁用所有代理）')
+parser.add_argument('--http-proxy', type=str, help='指定HTTP代理服务器地址')
+parser.add_argument('--https-proxy', type=str, help='指定HTTPS代理服务器地址')
 
 args = parser.parse_args()
 if args.action == 'i':
@@ -20,3 +24,12 @@ if args.action == 'o':
     args.action = 'logout'
 if args.action == 's':
     args.action = 'status'
+
+# Set environment variables based on command-line arguments for proxy settings
+if not args.use_proxy:
+    # Disable all proxies by default unless --use-proxy is specified
+    os.environ['NO_PROXY'] = '*'
+if args.http_proxy:
+    os.environ['HTTP_PROXY'] = args.http_proxy
+if args.https_proxy:
+    os.environ['HTTPS_PROXY'] = args.https_proxy

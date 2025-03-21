@@ -10,6 +10,7 @@
 # Cookie: lang=zh-CN
 # Pragma: no-cache
 # Cache-Control: no-cache
+import os
 from requests import Session
 
 
@@ -23,4 +24,27 @@ def prepare_session() -> Session:
         "X-Requested-With": "XMLHttpRequest",
         "Connection": "keep-alive"
     })
+    
+    # Check environment variables for proxy settings
+    http_proxy = os.environ.get('HTTP_PROXY', os.environ.get('http_proxy'))
+    https_proxy = os.environ.get('HTTPS_PROXY', os.environ.get('https_proxy'))
+    no_proxy = os.environ.get('NO_PROXY', os.environ.get('no_proxy'))
+    
+    # Default behavior: disable proxies unless explicitly enabled
+    # Check if NO_PROXY is set to "*" to disable all proxies
+    if no_proxy == "*":
+        # Explicitly disable all proxies
+        sess.proxies.clear()
+        sess.proxies = {'http': None, 'https': None}
+    elif http_proxy or https_proxy:
+        # Use specified proxies if they are explicitly set
+        if http_proxy:
+            sess.proxies['http'] = http_proxy
+        if https_proxy:
+            sess.proxies['https'] = https_proxy
+    else:
+        # Default behavior: disable all proxies
+        sess.proxies.clear()
+        sess.proxies = {'http': None, 'https': None}
+    
     return sess
