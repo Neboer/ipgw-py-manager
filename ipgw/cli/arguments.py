@@ -12,6 +12,7 @@ parser.add_argument('--password', '-p', type=str, help='在命令行中指定的
 parser.add_argument('--all', '-a', action='store_true', help='下线所有设备')
 parser.add_argument('--version', '-V', action='version', version=f'NEU-ipgw-manager version {ipgw.__version__}', help='显示软件版本信息')
 parser.add_argument('--verbose', '-v', action='store_true', help='详细输出日志')
+parser.add_argument('--bypass-system-proxy', action='store_true', help='跳过系统代理')
 
 args = parser.parse_args()
 if args.action == 'i':
