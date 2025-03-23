@@ -33,7 +33,7 @@ def main():
                 logging.info("添加成功")
             else:
                 # 接下来，需要处理网络登录登出问题了。
-                main_ipgw = IPGW(bypass_proxy=args.bypass_system_proxy) # pass the bypass_system_proxy argument to the IPGW class
+                main_ipgw = IPGW(bypass_proxy=args.bypass_system_proxy) # 将args.bypass_system_proxy的值传入bypass_proxy，默认为false
                 current_ipgw_status = main_ipgw.get_status()
                 if args.action == 'status':
                     print_ipgw_status(current_ipgw_status)

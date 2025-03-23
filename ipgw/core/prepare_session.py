@@ -13,6 +13,7 @@
 from requests import Session
 
 
+# 加入bypass_proxy为参数，判断是否需要跳过系统代理，默认为false
 def prepare_session(bypass_proxy: bool = False) -> Session:
     sess = Session()
     sess.headers.update({
@@ -24,7 +25,6 @@ def prepare_session(bypass_proxy: bool = False) -> Session:
         "Connection": "keep-alive"
     })
 
-    # check the bypass_proxy flag to skip the system proxy
     if bypass_proxy:
         sess.trust_env = False #Disable proxy trust
     return sess
