@@ -13,7 +13,8 @@
 from requests import Session
 
 
-def prepare_session() -> Session:
+# 加入bypass_proxy为参数，判断是否需要跳过系统代理，默认为false
+def prepare_session(bypass_proxy: bool = False) -> Session:
     sess = Session()
     sess.headers.update({
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0",
@@ -23,4 +24,7 @@ def prepare_session() -> Session:
         "X-Requested-With": "XMLHttpRequest",
         "Connection": "keep-alive"
     })
+
+    if bypass_proxy:
+        sess.trust_env = False #Disable proxy trust
     return sess
