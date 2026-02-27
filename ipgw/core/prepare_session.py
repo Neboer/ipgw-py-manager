@@ -12,10 +12,22 @@
 # Cache-Control: no-cache
 from requests import Session
 
+DEFAULT_REQUEST_TIMEOUT = 3
+
+
+class TimeoutSession(Session):
+    def __init__(self, default_timeout: int = DEFAULT_REQUEST_TIMEOUT):
+        super().__init__()
+        self.default_timeout = default_timeout
+
+    def request(self, method, url, **kwargs):
+        kwargs.setdefault("timeout", self.default_timeout)
+        return super().request(method, url, **kwargs)
+
 
 # 加入bypass_proxy为参数，判断是否需要跳过系统代理，默认为false
 def prepare_session(bypass_proxy: bool = False) -> Session:
-    sess = Session()
+    sess = TimeoutSession()
     sess.headers.update({
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0",
         "Accept": "application/json",
