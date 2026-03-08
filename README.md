@@ -21,6 +21,7 @@
 - 2021.11.03，NEU-ipgw-manager更新到了3.0版本，适配了这个新的api。
 - 2024.09.13, NEU-ipgw-manager更新到了3.1版本，将整个软件的框架和构建系统升级到最新的Python标准中，并简化了安装要求。
 - 2025.01.06, NEU-ipgw-manager更新到了3.2版本，规范了对应操作系统下配置文件生成的位置，更符合规范。
+- 2026.03.08, NEU-ipgw-manager更新到了3.3版本，适配支持了教务处的新版SSO登录功能，感谢 [#13](https://github.com/Neboer/ipgw-py-manager/pull/13) 的贡献。
 
 ## 安装
 ### 自动安装
