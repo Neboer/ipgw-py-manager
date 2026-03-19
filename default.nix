@@ -1,10 +1,19 @@
-{ pkgs ? import <nixpkgs> {} }:
+{
+  pkgs ? import <nixpkgs> { },
+  ...
+}:
 
-pkgs.python3Packages.buildPythonPackage rec {
+pkgs.python3Packages.buildPythonPackage {
   pname = "NEU-ipgw-manager";
-  version = "1.0.0"; # 请根据实际版本调整
+  version = "3.3";
 
-  src = ./.;
+  src = pkgs.fetchFromGitHub {
+    owner = "Neboer";
+    repo = "ipgw-py-manager";
+    # branch = "master";
+    tag = "v3.3";
+    sha256 = "sha256-h+p/xNtYarew/A2RztV/rnsebIfdLFXgt1U3pF6xDCs=";
+  };
 
   pyproject = true;
 
@@ -16,13 +25,12 @@ pkgs.python3Packages.buildPythonPackage rec {
     wcwidth
     platformdirs
     setuptools
-    setupmeta
   ];
 
   meta = with pkgs.lib; {
-    description = "ipgw maanger for NEU network gateway";
+    description = "ipgw manager for NEU network gateway";
     homepage = "https://pypi.org/project/NEU-ipgw-manager/";
     license = licenses.mit;
-    maintainers = [ ]; 
+    maintainers = with pkgs; [ Neboer ];
   };
 }

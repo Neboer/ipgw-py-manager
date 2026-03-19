@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs = {
-      url = "git+https://mirrors.cernet.edu.cn/nixpkgs.git?ref=nixpkgs-unstable&shallow=1";
+      url = "github:NixOS/nixpkgs/nixos-unstable";
     };
     flake-utils = {
       url = "github:numtide/flake-utils";
@@ -13,7 +13,9 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+        };
       in
       {
         packages.default = import ./default.nix { inherit pkgs; };
