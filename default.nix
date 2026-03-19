@@ -7,6 +7,8 @@ pkgs.python3Packages.buildPythonPackage {
   pname = "NEU-ipgw-manager";
   version = "3.3";
 
+  src = ./.;
+  /*
   src = pkgs.fetchFromGitHub {
     owner = "Neboer";
     repo = "ipgw-py-manager";
@@ -14,6 +16,7 @@ pkgs.python3Packages.buildPythonPackage {
     tag = "v3.3";
     sha256 = "sha256-h+p/xNtYarew/A2RztV/rnsebIfdLFXgt1U3pF6xDCs=";
   };
+  */
 
   pyproject = true;
 
