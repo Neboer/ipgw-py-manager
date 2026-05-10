@@ -1,3 +1,7 @@
+from typing import cast
+
+from ipgw.core.api.portal import IPGWNotOnlineInfo, IPGWOnlineInfo
+
 from .arguments import args
 from ..core.errors_modals import *
 from ..core.config import config, add_user, set_default_username, update_last_login_info
@@ -34,35 +38,42 @@ def main():
             else:
                 # 接下来，需要处理网络登录登出问题了。
                 main_ipgw = IPGW(bypass_proxy=args.bypass_system_proxy) # 将args.bypass_system_proxy的值传入bypass_proxy，默认为false
-                current_ipgw_status = main_ipgw.get_status()
+                current_status = main_ipgw.get_status()
                 if args.action == 'status':
-                    print_ipgw_status(current_ipgw_status)
+                    print_ipgw_status(current_status)
                 elif args.action == 'logout':
-                    if current_ipgw_status['error'] == 'not_online_error':  # 当前ip没有在线
+                    if current_status['error'] == 'not_online_error':  # 当前ip没有在线
                         logging.error("ip不在线，无法下线")
-                    elif current_ipgw_status['error'] == 'ok':  # 当前ip已经在线
+                    elif current_status['error'] == 'ok':  # 当前ip已经在线
+                        current_status = cast(IPGWOnlineInfo, current_status)
                         if args.all:
                             main_ipgw.batch_logout()
                             logging.info("成功断开所有连接")
                         else:
-                            main_ipgw.advanced_logout(current_ipgw_status['user_name'],
-                                                      current_ipgw_status['online_ip'])
+                            main_ipgw.advanced_logout(current_status['user_name'],
+                                                      current_status['online_ip'])
                             logging.info("成功注销当前账号")
                 elif args.action == 'login':
-                    if current_ipgw_status['error'] == 'ok':
+                    if current_status['error'] == 'ok':
                         logging.error("ip已经在线，无需登录")
-                    elif current_ipgw_status['error'] == 'not_online_error':
+                    elif current_status['error'] == 'not_online_error':
                         # ip不在线，需要登录
-                        current_login_result = main_ipgw.login(target_user['username'], target_user['password'])
+                        username = target_user.get('username')
+                        password = target_user.get('password')
+                        if not username or not password:
+                            logging.error("缺少用户名或密码，无法登录")
+                            return -7
+                        current_login_result = main_ipgw.login(username, password)
                         if current_login_result == LoginResult.UsernameOrPasswordError:
                             logging.error("用户名或密码错误")
                         elif current_login_result == LoginResult.LoginSuccessful:
                             logging.info("登录成功")
-                            current_ipgw_status = main_ipgw.get_status(must_success=True)
+                            current_status = main_ipgw.get_status(must_success=True)
+                            current_status = cast(IPGWOnlineInfo, current_status)
                             # 打印登录状态
-                            print_ipgw_status(current_ipgw_status)
+                            print_ipgw_status(current_status)
                             # 将用户信息写入配置文件。
-                            update_last_login_info(current_ipgw_status['user_name'], current_ipgw_status['online_ip'])
+                            update_last_login_info(current_status['user_name'], current_status['online_ip'])
                         elif current_login_result == LoginResult.ArrearageUserError:
                             logging.error("用户已欠费")
                         elif current_login_result == LoginResult.UserAlreadyOnlineError:

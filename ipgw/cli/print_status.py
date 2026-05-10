@@ -3,7 +3,7 @@ from tabulate import tabulate
 from datetime import timedelta
 
 from ..core.api.portal import IPGWOnlineInfo, IPGWNotOnlineInfo
-from typing import Union
+from typing import Union, cast
 
 
 def _sizeof_fmt(num, suffix='B'):
@@ -17,6 +17,7 @@ def _sizeof_fmt(num, suffix='B'):
 def print_ipgw_status(info: Union[IPGWOnlineInfo, IPGWNotOnlineInfo]):
     # 结构化输出
     if info['error'] == 'ok':
+        info = cast(IPGWOnlineInfo, info)
         total_bytes = info['remain_bytes'] + info['sum_bytes']
         sum_bytes = info['sum_bytes']
         try:
@@ -35,4 +36,5 @@ def print_ipgw_status(info: Union[IPGWOnlineInfo, IPGWNotOnlineInfo]):
         ]
         print(tabulate(info_table, tablefmt='simple'))
     elif info['error'] == 'not_online_error':
+        info = cast(IPGWNotOnlineInfo, info)
         print(f'IP地址{info["client_ip"]}目前没有在线。')

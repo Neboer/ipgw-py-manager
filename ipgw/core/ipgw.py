@@ -1,10 +1,11 @@
 # main ipgw progress
 import logging
 from time import sleep
+from typing import Optional, Union
 
 from .api.sso import sso_prepare, sso_login
 from .api.sso_error import UnionAuthError
-from .api.portal import login_from_sso, get_info, logout, batch_logout, get_ipgw_session_acid
+from .api.portal import IPGWNotOnlineInfo, IPGWOnlineInfo, login_from_sso, get_info, logout, batch_logout, get_ipgw_session_acid
 from .api.portal_error import OtherException, IPNotOnlineError
 from .errors_modals import LoginResult
 from .prepare_session import prepare_session
@@ -17,7 +18,7 @@ class IPGW:
     def __init__(self, bypass_proxy: bool = False):
         self.sess = prepare_session(bypass_proxy) # 传入bypass_proxy
         self.union_auth_page = sso_prepare(self.sess)
-        self.status = None
+        self.status: Optional[Union[IPGWOnlineInfo, IPGWNotOnlineInfo]] = None
         self.acid = get_ipgw_session_acid(self.sess)
         logging.debug(f"get_ipgw_session_acid: {self.acid}")
 
@@ -47,14 +48,14 @@ class IPGW:
             logging.error(f"登录时遇到未知错误：{result['code']}, {result['message']}")
             raise OtherException(result)
 
-    def get_status(self, must_success = False):
+    def get_status(self, must_success = False) -> Union[IPGWOnlineInfo, IPGWNotOnlineInfo]:
         max_retries = 5
         result = None
-        for i in range(max_retries):
+        for _ in range(max_retries):
             result = get_info(self.sess)
             if not must_success:
                 break
-            elif len(result['billing_name'].strip()) == 0:
+            elif 'billing_name' in result and len(result['billing_name'].strip()) == 0:
                 # IPGW系统的bug，在长时间不登录系统后突然登录可能会无法获得账号信息。
                 logging.warning("暂时无法获取账号信息，重试中……")
                 sleep(1)
@@ -63,6 +64,10 @@ class IPGW:
                 break
         else:
             logging.error("错误：暂时无法获取完整账号信息。")
+
+        if result is None:
+            raise OtherException("无法获取账号信息。")
+
         self.status = result
         return result
 

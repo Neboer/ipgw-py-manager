@@ -20,9 +20,9 @@ class TimeoutSession(Session):
         super().__init__()
         self.default_timeout = default_timeout
 
-    def request(self, method, url, **kwargs):
+    def request(self, method, url, *args, **kwargs):
         kwargs.setdefault("timeout", self.default_timeout)
-        return super().request(method, url, **kwargs)
+        return super().request(method, url, *args, **kwargs)
 
 
 # 加入bypass_proxy为参数，判断是否需要跳过系统代理，默认为false
