@@ -1,11 +1,11 @@
 import logging
-from typing import TypedDict
+from typing import TypeVar, TypedDict, Optional, cast
 from urllib.parse import parse_qs, urlparse
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 from requests import Session
 
-from .SSO_error import BackendError, UnionAuthError, UnknownPageError
+from .sso_error import BackendError, UnionAuthError, UnknownPageError
 from .sso_rsa import extract_login_page_rsa_public_key, rsa_encrypt_username_password
 
 ua = '''Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36'''
@@ -27,22 +27,31 @@ class SSOPage(TypedDict):
     rsa_public_key: str
 
 
+# 增加辅助函数（语义类似 !!）以安抚类型检查器
+T = TypeVar('T')
+
+def _ensure(value: Optional[T], error_message: str) -> T:
+    if value is None:
+        raise ValueError(error_message)
+    return value
+
+
 # 准备一个SSO内容，里面有
-def SSO_prepare(session: Session) -> SSOPage:
+def sso_prepare(session: Session) -> SSOPage:
     page_soup = BeautifulSoup(session.get(target).text, "html.parser")
-    form: Tag = page_soup.find("form", {'id': 'loginForm'})
+    form = _ensure(page_soup.find("form", {'id': 'loginForm'}), "Missing login form")
     sso_form_data = {
-        "form_lt_string": form.find("input", {'id': 'lt'}).attrs["value"],
-        "form_destination": form.attrs['action'],
-        "form_execution": form.find("input", {'name': 'execution'}).attrs["value"],
+        "form_lt_string": _ensure(form.find("input", {'id': 'lt'}), "Missing 'lt' input").attrs["value"],
+        "form_destination": _ensure(form.attrs.get('action'), "Missing form action"),
+        "form_execution": _ensure(form.find("input", {'name': 'execution'}), "Missing 'execution' input").attrs["value"],
         "rsa_public_key": extract_login_page_rsa_public_key(session, page_soup)
     }
     logging.debug(f"sso_form_data: {sso_form_data}")
-    return sso_form_data
+    return cast(SSOPage, sso_form_data)
 
 
 # 请求SSO和认证SSO两个操作合并到一个API接口中，直接操作。返回一个SSO ticket。这个函数会触发异常
-def SSO_login(session: Session, page: SSOPage, username, password, ac_id) -> str:
+def sso_login(session: Session, page: SSOPage, username, password, ac_id) -> str:
     form_data = {
         'rsa': rsa_encrypt_username_password(username, password, page["rsa_public_key"]),
         'ul': len(username),

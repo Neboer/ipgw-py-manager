@@ -3,21 +3,22 @@ from base64 import b64decode
 from base64 import b64encode
 from secrets import token_bytes
 from urllib.parse import urljoin
+from typing import Optional
 
 from bs4 import BeautifulSoup
 from requests import Session
 
-from .SSO_error import BackendError
+from .sso_error import BackendError
 
 RSA_PADDING_OVERHEAD = 11
 
 
 def extract_login_page_rsa_public_key(session: Session, page_soup: BeautifulSoup) -> str:
-    login_js_src = None
+    login_js_src: Optional[str] = None
     for script_tag in page_soup.find_all("script", src=True):
         script_src = script_tag.attrs.get("src", "")
         if "login_neu.js" in script_src:
-            login_js_src = script_src
+            login_js_src = str(script_src)
             break
     if not login_js_src:
         raise BackendError("cannot find login_neu.js from SSO login page")

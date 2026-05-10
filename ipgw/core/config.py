@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import List, Union
+from typing import List, Optional
 from platformdirs import user_config_dir
 
 from .errors_modals import *
@@ -17,13 +17,16 @@ class User(TypedDict, total=False):
 
     last_login_result: str
 
+    mobile_tgt: str
+
 
 default_config_dict = {
     "users": [],
     "ua": "",
     "default_kick": "relogin",
     "last_login_username": "",
-    "last_sid": ""
+    "last_sid": "",
+    "mobile_tgt_username": ""
 }
 
 
@@ -31,6 +34,7 @@ class Config(TypedDict):
     users: List[User]
     last_login_username: str  # 上次登录的用户名
     last_ip_addr: str
+    mobile_tgt_username: str  # 最近一次获取 mobile TGT 的用户名
 
 
 def get_config_path() -> Path:
@@ -56,30 +60,30 @@ def update_config_file():
         json.dump(config, writable_config_file, ensure_ascii=False, indent=4)
 
 
-def add_user(user_dict: User) -> None:
+def add_user(user_dict: User):
     if "is_default" not in user_dict.keys():
         user_dict['is_default'] = False
     config["users"].append(user_dict)
     update_config_file()
 
 
-def query_user_by_username(username: str) -> Union[User, None]:
+def query_user_by_username(username: str) -> Optional[User]:
     users_list = config["users"]
-    return next((x for x in users_list if x['username'] == username), None)
+    return next((x for x in users_list if x.get('username') == username), None)
 
 
 def query_default_user() -> User:
     users_list = config["users"]
-    result = next((x for x in users_list if x['is_default']), None)
+    result = next((x for x in users_list if x.get('is_default')), None)
     if not result:
         raise NoDefaultUserError
     return result
 
 
-def set_default_username(username: str) -> None:
+def set_default_username(username: str):
     find = False
     for user in config["users"]:
-        if user["username"] == username:
+        if user.get("username") == username:
             user["is_default"] = True
             find = True
         else:
@@ -97,5 +101,21 @@ def update_last_login_info(username="", ip_addr=""):
     update_config_file()
 
 
-def query_last_user() -> User:
+def query_last_user() -> Optional[User]:
     return query_user_by_username(config['last_login_username'])
+
+
+def save_mobile_tgt(username: str, tgt: str) -> None:
+    user = query_user_by_username(username)
+    if user is None:
+        raise UsernameNotInConfigFileError
+    user["mobile_tgt"] = tgt
+    config["mobile_tgt_username"] = username
+    update_config_file()
+
+
+def load_mobile_tgt(username: str) -> Optional[str]:
+    user = query_user_by_username(username)
+    if user is None:
+        return None
+    return user.get("mobile_tgt")

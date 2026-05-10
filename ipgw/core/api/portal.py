@@ -1,10 +1,9 @@
-import logging
 from math import floor
 from requests import Session
 from time import time
 from random import choice
 from string import digits
-from typing import TypedDict, Union
+from typing import TypedDict, Union, cast
 from json import loads
 from urllib.parse import parse_qs, urlparse
 
@@ -36,7 +35,7 @@ class IPGWOnlineInfo(TypedDict):
     user_balance: int
     user_charge: int
     user_mac: str
-    user_name: int
+    user_name: str
     wallet_balance: int
 
 
@@ -82,7 +81,7 @@ def login_from_sso(session: Session, sso_token, ac_id):
 def get_info(session: Session) -> Union[IPGWOnlineInfo, IPGWNotOnlineInfo]:
     reply = session.get(
         f"http://ipgw.neu.edu.cn/cgi-bin/rad_user_info?callback={_jq_cbid()}_{_timestamp()}&_={_timestamp()}")
-    return _unwrap_javascript_json(reply.text)
+    return cast(Union[IPGWOnlineInfo, IPGWNotOnlineInfo], _unwrap_javascript_json(reply.text))
 
 
 def logout(session: Session, username, ip, ac_id):
