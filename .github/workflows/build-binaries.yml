@@ -5,7 +5,7 @@ on:
     pull_request:
         branches:
             - "**"
-    push:
+    push: # 在任何分支和 tag 上运行，用于验证编译问题
         branches:
             - "**"
         tags:
@@ -51,7 +51,7 @@ jobs:
                   python -m pip install . pyinstaller
 
             - name: Build binary
-              run: python -m PyInstaller --clean --noconfirm --onefile --name ipgw --paths . packaging/ipgw_launcher.py
+              run: python -m PyInstaller --clean --noconfirm --onefile --name ipgw --paths . build-binary/ipgw_launcher.py
 
             - name: Smoke test binary
               shell: bash
