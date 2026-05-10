@@ -1,0 +1,102 @@
+name: Build binaries
+
+on:
+    workflow_dispatch:
+    push:
+        tags:
+            - "*"
+
+permissions:
+    contents: read
+
+jobs:
+    build:
+        name: Build ${{ matrix.asset_name }}
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - os: ubuntu-22.04
+                      asset_name: ipgw-linux-x86_64
+                      binary_path: dist/ipgw
+                    - os: windows-2022
+                      asset_name: ipgw-windows-x86_64.exe
+                      binary_path: dist/ipgw.exe
+                    - os: macos-15-intel
+                      asset_name: ipgw-macos-x86_64
+                      binary_path: dist/ipgw
+                    - os: macos-15
+                      asset_name: ipgw-macos-arm64
+                      binary_path: dist/ipgw
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  python -m pip install . pyinstaller
+
+            - name: Run tests
+              run: python -m unittest discover
+
+            - name: Build binary
+              run: python -m PyInstaller --clean --noconfirm --onefile --name ipgw packaging/ipgw_launcher.py
+
+            - name: Smoke test binary
+              shell: bash
+              run: |
+                  if [[ "$RUNNER_OS" == "Windows" ]]; then
+                    ./dist/ipgw.exe --version
+                  else
+                    ./dist/ipgw --version
+                  fi
+
+            - name: Prepare artifact
+              shell: bash
+              run: |
+                  mkdir -p release-assets
+                  cp "${{ matrix.binary_path }}" "release-assets/${{ matrix.asset_name }}"
+                  if [[ "$RUNNER_OS" != "Windows" ]]; then
+                    chmod +x "release-assets/${{ matrix.asset_name }}"
+                  fi
+
+            - name: Upload binary artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ matrix.asset_name }}
+                  path: release-assets/${{ matrix.asset_name }}
+                  if-no-files-found: error
+
+    checksums:
+        name: Generate checksums
+        needs: build
+        runs-on: ubuntu-22.04
+
+        steps:
+            - name: Download binary artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  path: artifacts
+
+            - name: Generate SHA256SUMS
+              run: |
+                  mkdir -p release-assets
+                  find artifacts -type f -name 'ipgw-*' -exec cp '{}' release-assets/ \;
+                  cd release-assets
+                  sha256sum ipgw-* > SHA256SUMS
+
+            - name: Upload release asset bundle
+              uses: actions/upload-artifact@v4
+              with:
+                  name: release-assets
+                  path: release-assets/*
+                  if-no-files-found: error
