@@ -2,8 +2,8 @@
 import logging
 from time import sleep
 
-from .api.SSO import SSO_prepare, SSO_login
-from .api.SSO_error import UnionAuthError
+from .api.sso import sso_prepare, sso_login
+from .api.sso_error import UnionAuthError
 from .api.portal import login_from_sso, get_info, logout, batch_logout, get_ipgw_session_acid
 from .api.portal_error import OtherException, IPNotOnlineError
 from .errors_modals import LoginResult
@@ -16,14 +16,14 @@ class IPGW:
     # 在参数中加入bypass_proxy,用以判断是否跳过系统代理
     def __init__(self, bypass_proxy: bool = False):
         self.sess = prepare_session(bypass_proxy) # 传入bypass_proxy
-        self.union_auth_page = SSO_prepare(self.sess)
+        self.union_auth_page = sso_prepare(self.sess)
         self.status = None
         self.acid = get_ipgw_session_acid(self.sess)
         logging.debug(f"get_ipgw_session_acid: {self.acid}")
 
     def login(self, username, password):
         try:
-            token = SSO_login(self.sess, self.union_auth_page, username, password, self.acid)
+            token = sso_login(self.sess, self.union_auth_page, username, password, self.acid)
             logging.debug(f"sso_login get token: {token}")
         except UnionAuthError:
             return LoginResult.UsernameOrPasswordError

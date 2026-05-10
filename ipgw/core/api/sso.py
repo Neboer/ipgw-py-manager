@@ -5,7 +5,7 @@ from urllib.parse import parse_qs, urlparse
 from bs4 import BeautifulSoup, Tag
 from requests import Session
 
-from .SSO_error import BackendError, UnionAuthError, UnknownPageError
+from .sso_error import BackendError, UnionAuthError, UnknownPageError
 from .sso_rsa import extract_login_page_rsa_public_key, rsa_encrypt_username_password
 
 ua = '''Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36'''
@@ -28,7 +28,7 @@ class SSOPage(TypedDict):
 
 
 # 准备一个SSO内容，里面有
-def SSO_prepare(session: Session) -> SSOPage:
+def sso_prepare(session: Session) -> SSOPage:
     page_soup = BeautifulSoup(session.get(target).text, "html.parser")
     form: Tag = page_soup.find("form", {'id': 'loginForm'})
     sso_form_data = {
@@ -42,7 +42,7 @@ def SSO_prepare(session: Session) -> SSOPage:
 
 
 # 请求SSO和认证SSO两个操作合并到一个API接口中，直接操作。返回一个SSO ticket。这个函数会触发异常
-def SSO_login(session: Session, page: SSOPage, username, password, ac_id) -> str:
+def sso_login(session: Session, page: SSOPage, username, password, ac_id) -> str:
     form_data = {
         'rsa': rsa_encrypt_username_password(username, password, page["rsa_public_key"]),
         'ul': len(username),

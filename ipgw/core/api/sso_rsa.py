@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from requests import Session
 
-from .SSO_error import BackendError
+from .sso_error import BackendError
 
 RSA_PADDING_OVERHEAD = 11
 
