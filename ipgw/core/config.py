@@ -17,13 +17,16 @@ class User(TypedDict, total=False):
 
     last_login_result: str
 
+    mobile_tgt: str
+
 
 default_config_dict = {
     "users": [],
     "ua": "",
     "default_kick": "relogin",
     "last_login_username": "",
-    "last_sid": ""
+    "last_sid": "",
+    "mobile_tgt_username": ""
 }
 
 
@@ -31,6 +34,7 @@ class Config(TypedDict):
     users: List[User]
     last_login_username: str  # 上次登录的用户名
     last_ip_addr: str
+    mobile_tgt_username: str  # 最近一次获取 mobile TGT 的用户名
 
 
 def get_config_path() -> Path:
@@ -99,3 +103,19 @@ def update_last_login_info(username="", ip_addr=""):
 
 def query_last_user() -> Optional[User]:
     return query_user_by_username(config['last_login_username'])
+
+
+def save_mobile_tgt(username: str, tgt: str) -> None:
+    user = query_user_by_username(username)
+    if user is None:
+        raise UsernameNotInConfigFileError
+    user["mobile_tgt"] = tgt
+    config["mobile_tgt_username"] = username
+    update_config_file()
+
+
+def load_mobile_tgt(username: str) -> Optional[str]:
+    user = query_user_by_username(username)
+    if user is None:
+        return None
+    return user.get("mobile_tgt")
