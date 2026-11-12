@@ -13,21 +13,18 @@ RSA_PADDING_OVERHEAD = 11
 
 
 def extract_login_page_rsa_public_key(session: Session, page_soup: BeautifulSoup) -> str:
-    login_js_src = None
-    for script_tag in page_soup.find_all("script", src=True):
-        script_src = script_tag.attrs.get("src", "")
-        if "login_neu.js" in script_src:
-            login_js_src = script_src
-            break
-    if not login_js_src:
-        raise BackendError("cannot find login_neu.js from SSO login page")
-
-    login_js_url = urljoin("https://pass.neu.edu.cn", login_js_src)
-    login_js_text = session.get(login_js_url).text
-    public_key_match = re.search(r'publicKeyStr\s*=\s*"([^"]+)"', login_js_text)
-    if not public_key_match:
-        raise BackendError("cannot extract publicKeyStr from login_neu.js")
-    return public_key_match.group(1)
+    for script_tag in reversed(page_soup.find_all("script")):
+        script_src = script_tag.get("src")
+        script_text = (
+            session.get(urljoin("https://pass.neu.edu.cn/tpass/login", script_src)).text
+            if script_src else script_tag.get_text()
+        )
+        public_key_match = re.search(
+            r'''(?m)^\s*(?:(?:const|let|var)\s+)?publicKeyStr\s*=\s*(["'])(.+?)\1''', script_text
+        )
+        if public_key_match:
+            return public_key_match.group(2)
+    raise BackendError("cannot extract publicKeyStr from SSO login scripts")
 
 
 def _read_der_tlv(der_bytes: bytes, offset: int):
