@@ -1,46 +1,58 @@
 # NEU ipgw manager
 
-![](https://img.shields.io/badge/NEU-ipgw--manager-blue.svg)
+[![PyPI](https://img.shields.io/pypi/v/NEU-ipgw-manager)](https://pypi.org/project/NEU-ipgw-manager/)
 
 ![](./IPGW.svg)
 
-东北大学ipgw网关管理程序重制版，仅支持统一身份认证用户名-密码登录
+东北大学校园网网关（IPGW）的命令行工具，支持使用统一身份认证账号和密码登录，不需要打开浏览器。
 
-- 漂亮的、格式化的表格输出，内容清晰易读，和网页端提供相同的信息。
-- 兼容强，可以识别ipgw的所有状态和页面，比如停止服务、其他设备在线、费用不足等情况，并可以像网页端一样作出操作。
-- 适配广泛，对于无线网络、有线网络、安卓/IOS/Windows设备都有很好的支持，你完全可以把它作为无界面服务器联网的工具，同时比浏览器使用方便很多。
-- 支持多用户管理，带有配置文件，可以用简单的命令执行复杂的操作。当然也可以覆盖默认的行为。配置文件人类可读，修改起来很方便。
-- 模拟真实浏览器操作，稳定运行多年，无任何使用风险。
-- 不仅仅是一个网络登录程序，内置core模块可以非常容易的重用，代替实现各种校内网页认证等功能，非常方便。
+- 登录、下线和查询网关状态；登录后以表格显示账号信息和在线设备。
+- 保存多个账号并设置默认账号，适合在终端或无图形界面的设备上使用。
+- `ipgw.core` 可在其他 Python 程序中复用。
 
-使用此脚本管理自己的ipgw连接，可以加快操作ipgw网关的速度，节省时间，无论是联网还是断网都十分方便。
-
-本项目承诺长期更新，长期可用，功能稳定。
+## 版本记录
 
 - 2021.11.02，东北大学校园网迎来了一次更新。此次更新修改了后端的api接口以及原有的登录策略和校验逻辑。
 - 2021.11.03，NEU-ipgw-manager更新到了3.0版本，适配了这个新的api。
 - 2024.09.13, NEU-ipgw-manager更新到了3.1版本，将整个软件的框架和构建系统升级到最新的Python标准中，并简化了安装要求。
 - 2025.01.06, NEU-ipgw-manager更新到了3.2版本，规范了对应操作系统下配置文件生成的位置，更符合规范。
 - 2026.03.08, NEU-ipgw-manager更新到了3.3版本，适配支持了教务处的新版SSO登录功能，感谢 [#13](https://github.com/Neboer/ipgw-py-manager/pull/13) 的贡献。
+- 2026.11.13，[v3.4](https://github.com/Neboer/ipgw-py-manager/releases/tag/v3.4) 修复了统一身份认证登录脚本改名导致的登录失败，兼容 `login_neu_new.js` 和 `login_neu.js`（[#21](https://github.com/Neboer/ipgw-py-manager/pull/21)）；新增多平台独立可执行文件构建（[#19](https://github.com/Neboer/ipgw-py-manager/pull/19)）。
 
 ## 安装
-### 自动安装
-本软件已经发布到PyPI，只需要执行
 
-```pip install NEU-ipgw-manager```
+### 从 PyPI 安装或升级
 
-本项目支持从3.7开始的所有现代Python版本，项目本身是在Python 3.12上开发的。
+包声明的 Python 版本要求为 3.7 或更高。
 
-### 手动安装
-首先克隆本仓库的源代码
+```bash
+python -m pip install --upgrade NEU-ipgw-manager
+ipgw --version
+```
 
-`git clone https://github.com/Neboer/ipgw-py-manager.git`
+### 下载独立可执行文件
 
-切换到文件夹中，`cd ipgw-py-manager`
+无需安装 Python。进入 [v3.4 的 Build binaries 构建页面](https://github.com/Neboer/ipgw-py-manager/actions/runs/43393143945)，登录 GitHub 后，在 **Artifacts** 下载对应平台的压缩包：
 
-然后执行`pip install .`从源代码安装本软件
+| 平台 | 产物 |
+| --- | --- |
+| Linux x86_64 | `ipgw-linux-x86_64` |
+| Windows x86_64 | `ipgw-windows-x86_64.exe` |
+| macOS Intel | `ipgw-macos-x86_64` |
+| macOS Apple Silicon | `ipgw-macos-arm64` |
 
-这样，就可以直接在命令行中执行`ipgw --version`来确认安装了。
+`release-assets` 包含上述文件和 `SHA256SUMS`。这些文件是有保留期限的 Actions 产物，不是 GitHub Release 附件。
+
+解压后，在 Linux 或 macOS 上可用 `chmod +x` 给对应文件添加执行权限，再运行该文件并传入 `--version`；在 Windows PowerShell 中运行 `.\ipgw-windows-x86_64.exe --version`。
+
+### 从源码安装
+
+```bash
+git clone https://github.com/Neboer/ipgw-py-manager.git
+cd ipgw-py-manager
+python -m pip install .
+ipgw --version
+```
 
 ## 快速上手
 
@@ -141,10 +153,10 @@ ipgw o --all
 ### 账号管理
 
 ```shell
-ipgw add 20200001 -p thepassword
+ipgw add -u 20200001
 ```
 
-与login行为基本相同，-p应该省略，由用户手动输入。
+按提示输入密码。不要通过 `-p` 传递密码，以免留在 shell 历史记录中。
 
 ```shell
 ipgw default -u 20200001
@@ -156,7 +168,7 @@ ipgw default -u 20200001
 
 ### 配置文件迁移
 
-更新到3.2版本以上时，程序的配置文件路径发生改变，如果您在家目录下有 `ipgw.json` 文件，更新完本软件之后，请执行 `ipgw login` 以登录， 
+从 3.2 开始，`ipgw.json` 保存在系统的用户配置目录中。运行 `ipgw --help` 查看当前路径。如果账号仍保存在家目录下的旧配置文件中，可以用 `ipgw add -u <学工号>` 重新添加账号，再用 `ipgw default -u <学工号>` 设置默认账号。配置文件包含明文密码，请勿分享或提交到版本库。
 
 ### 详细输出
 
